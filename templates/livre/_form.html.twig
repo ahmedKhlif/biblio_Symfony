@@ -1,0 +1,65 @@
+{{ form_start(form, {'attr': {'class': 'user'}}) }}
+    <div class="form-group row">
+        <div class="col-sm-6 mb-3 mb-sm-0">
+            {{ form_label(form.titre, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.titre, {'attr': {'class': 'form-control form-control-user', 'placeholder': 'Titre du livre'}}) }}
+            {{ form_errors(form.titre) }}
+        </div>
+        <div class="col-sm-6">
+            {{ form_label(form.isbn, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.isbn, {'attr': {'class': 'form-control form-control-user', 'placeholder': 'ISBN'}}) }}
+            {{ form_errors(form.isbn) }}
+        </div>
+    </div>
+    <div class="form-group row">
+        <div class="col-sm-6 mb-3 mb-sm-0">
+            {{ form_label(form.nbPages, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.nbPages, {'attr': {'class': 'form-control form-control-user', 'placeholder': 'Nombre de pages'}}) }}
+            {{ form_errors(form.nbPages) }}
+        </div>
+        <div class="col-sm-6">
+            {{ form_label(form.nbExemplaires, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.nbExemplaires, {'attr': {'class': 'form-control form-control-user', 'placeholder': 'Nombre d\'exemplaires'}}) }}
+            {{ form_errors(form.nbExemplaires) }}
+        </div>
+    </div>
+    <div class="form-group row">
+        <div class="col-sm-6 mb-3 mb-sm-0">
+            {{ form_label(form.prix, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.prix, {'attr': {'class': 'form-control form-control-user', 'placeholder': 'Prix'}}) }}
+            {{ form_errors(form.prix) }}
+        </div>
+        <div class="col-sm-6">
+            {{ form_label(form.dateEdition, null, {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.dateEdition, {'attr': {'class': 'form-control form-control-user'}}) }}
+            {{ form_errors(form.dateEdition) }}
+        </div>
+    </div>
+    <div class="form-group">
+        {{ form_label(form.image, null, {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.image, {'attr': {'class': 'form-control-file'}}) }}
+        {{ form_errors(form.image) }}
+        {% if livre.image %}
+            <div class="mt-2">
+                <img src="{{ asset('uploads/images/' ~ livre.image) }}" alt="Image actuelle" class="img-thumbnail" style="max-width: 200px;">
+                <p class="text-muted small mt-1">Image actuelle - Une nouvelle image la remplacera</p>
+            </div>
+        {% endif %}
+    </div>
+    <div class="form-group">
+        {{ form_label(form.auteur, null, {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.auteur, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.auteur) }}
+    </div>
+    <div class="form-group">
+        {{ form_label(form.categorie, null, {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.categorie, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.categorie) }}
+    </div>
+    <div class="form-group">
+        {{ form_label(form.editeur, null, {'label_attr': {'class': 'form-label'}}) }}
+        {{ form_widget(form.editeur, {'attr': {'class': 'form-control'}}) }}
+        {{ form_errors(form.editeur) }}
+    </div>
+    <button class="btn btn-primary btn-user btn-block">{{ button_label|default('Enregistrer') }}</button>
+{{ form_end(form) }}

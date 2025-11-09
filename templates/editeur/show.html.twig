@@ -1,0 +1,99 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de l'Éditeur{% endblock %}
+
+{% block body %}
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Détails de l'Éditeur</h1>
+        <div>
+            <a href="{{ path('app_editeur_index') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+                <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour à la liste
+            </a>
+            <a href="{{ path('app_editeur_edit', {'id': editeur.id}) }}" class="d-none d-sm-inline-block btn btn-sm btn-warning shadow-sm">
+                <i class="fas fa-edit fa-sm text-white-50"></i> Modifier
+            </a>
+        </div>
+    </div>
+
+    <!-- DataTales Example -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Informations de l'Éditeur</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">ID:</dt>
+                        <dd class="col-sm-8">{{ editeur.id }}</dd>
+
+                        <dt class="col-sm-4">Nom:</dt>
+                        <dd class="col-sm-8">{{ editeur.nomEditeur }}</dd>
+
+                        <dt class="col-sm-4">Pays:</dt>
+                        <dd class="col-sm-8">{{ editeur.pays }}</dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">Adresse:</dt>
+                        <dd class="col-sm-8">{{ editeur.adresse }}</dd>
+
+                        <dt class="col-sm-4">Téléphone:</dt>
+                        <dd class="col-sm-8">{{ editeur.telephone }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Livres de l'Éditeur -->
+    {% if editeur.livres|length > 0 %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Livres publiés par cet Éditeur ({{ editeur.livres|length }})</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Titre</th>
+                            <th>Auteur</th>
+                            <th>Catégorie</th>
+                            <th>Prix</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for livre in editeur.livres %}
+                        <tr>
+                            <td>{{ livre.titre }}</td>
+                            <td>{{ livre.auteur ? livre.auteur.prenom ~ ' ' ~ livre.auteur.nom : 'N/A' }}</td>
+                            <td>{{ livre.categorie ? livre.categorie.designation : 'N/A' }}</td>
+                            <td>{{ livre.prix }} €</td>
+                            <td>
+                                <a href="{{ path('app_livre_show', {'id': livre.id}) }}" class="btn btn-info btn-sm">
+                                    <i class="fas fa-eye"></i> Voir
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Delete Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-danger">Actions</h6>
+        </div>
+        <div class="card-body">
+            {{ include('editeur/_delete_form.html.twig') }}
+        </div>
+    </div>
+{% endblock %}

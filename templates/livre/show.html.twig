@@ -1,0 +1,83 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails du Livre{% endblock %}
+
+{% block body %}
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Détails du Livre</h1>
+        <div>
+            <a href="{{ path('app_livre_index') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+                <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour à la liste
+            </a>
+            <a href="{{ path('app_livre_edit', {'id': livre.id}) }}" class="d-none d-sm-inline-block btn btn-sm btn-warning shadow-sm">
+                <i class="fas fa-edit fa-sm text-white-50"></i> Modifier
+            </a>
+        </div>
+    </div>
+
+    <!-- DataTales Example -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Informations du Livre</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    {% if livre.image %}
+                        <div class="text-center mb-4">
+                            <img src="{{ asset('uploads/images/' ~ livre.image) }}" alt="{{ livre.titre }}" class="img-fluid rounded shadow" style="max-width: 250px;">
+                        </div>
+                    {% else %}
+                        <div class="text-center mb-4">
+                            <i class="fas fa-book fa-5x text-gray-300"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-8">
+                    <dl class="row">
+                        <dt class="col-sm-4">ID:</dt>
+                        <dd class="col-sm-8">{{ livre.id }}</dd>
+
+                        <dt class="col-sm-4">Titre:</dt>
+                        <dd class="col-sm-8"><strong>{{ livre.titre }}</strong></dd>
+
+                        <dt class="col-sm-4">Auteur:</dt>
+                        <dd class="col-sm-8">{{ livre.auteur ? livre.auteur.prenom ~ ' ' ~ livre.auteur.nom : 'N/A' }}</dd>
+
+                        <dt class="col-sm-4">Catégorie:</dt>
+                        <dd class="col-sm-8">{{ livre.categorie ? livre.categorie.designation : 'N/A' }}</dd>
+
+                        <dt class="col-sm-4">Éditeur:</dt>
+                        <dd class="col-sm-8">{{ livre.editeur ? livre.editeur.nomEditeur : 'N/A' }}</dd>
+
+                        <dt class="col-sm-4">ISBN:</dt>
+                        <dd class="col-sm-8">{{ livre.isbn }}</dd>
+
+                        <dt class="col-sm-4">Prix:</dt>
+                        <dd class="col-sm-8"><strong class="text-success">{{ livre.prix }} €</strong></dd>
+
+                        <dt class="col-sm-4">Pages:</dt>
+                        <dd class="col-sm-8">{{ livre.nbPages }}</dd>
+
+                        <dt class="col-sm-4">Exemplaires:</dt>
+                        <dd class="col-sm-8">{{ livre.nbExemplaires }}</dd>
+
+                        <dt class="col-sm-4">Date édition:</dt>
+                        <dd class="col-sm-8">{{ livre.dateEdition|date('d/m/Y') }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-danger">Actions</h6>
+        </div>
+        <div class="card-body">
+            {{ include('livre/_delete_form.html.twig') }}
+        </div>
+    </div>
+{% endblock %}

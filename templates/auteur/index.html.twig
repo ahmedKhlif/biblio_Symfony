@@ -1,0 +1,105 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des Auteurs{% endblock %}
+
+{% block body %}
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Gestion des Auteurs</h1>
+        <a href="{{ path('app_auteur_new') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Ajouter un Auteur
+        </a>
+    </div>
+
+    <!-- Search Form -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Recherche</h6>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{{ path('app_auteur_index') }}" class="d-flex">
+                <input type="text" name="search" value="{{ search|default('') }}" class="form-control" placeholder="Rechercher par prénom, nom ou biographie..." style="margin-right: 10px;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Rechercher
+                </button>
+                {% if search|default('') %}
+                    <a href="{{ path('app_auteur_index') }}" class="btn btn-secondary ml-2">
+                        <i class="fas fa-times"></i> Effacer
+                    </a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <!-- DataTales Example -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Liste des Auteurs</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>
+                                <a href="{{ path('app_auteur_index', {'sort': 'id', 'direction': sort == 'id' and direction == 'asc' ? 'desc' : 'asc', 'search': search}) }}" class="text-decoration-none">
+                                    ID
+                                    {% if sort == 'id' %}
+                                        <i class="fas fa-sort-{{ direction == 'asc' ? 'up' : 'down' }}"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ path('app_auteur_index', {'sort': 'prenom', 'direction': sort == 'prenom' and direction == 'asc' ? 'desc' : 'asc', 'search': search}) }}" class="text-decoration-none">
+                                    Prénom
+                                    {% if sort == 'prenom' %}
+                                        <i class="fas fa-sort-{{ direction == 'asc' ? 'up' : 'down' }}"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ path('app_auteur_index', {'sort': 'nom', 'direction': sort == 'nom' and direction == 'asc' ? 'desc' : 'asc', 'search': search}) }}" class="text-decoration-none">
+                                    Nom
+                                    {% if sort == 'nom' %}
+                                        <i class="fas fa-sort-{{ direction == 'asc' ? 'up' : 'down' }}"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>Biographie</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for auteur in auteurs %}
+                        <tr>
+                            <td>{{ auteur.id }}</td>
+                            <td>{{ auteur.prenom }}</td>
+                            <td>{{ auteur.nom }}</td>
+                            <td>{{ auteur.biographie|slice(0, 50) ~ '...' }}</td>
+                            <td>
+                                <a href="{{ path('app_auteur_show', {'id': auteur.id}) }}" class="btn btn-info btn-sm">
+                                    <i class="fas fa-eye"></i> Voir
+                                </a>
+                                <a href="{{ path('app_auteur_edit', {'id': auteur.id}) }}" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-edit"></i> Modifier
+                                </a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center">Aucun auteur trouvé</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if auteurs.getPageCount() > 1 %}
+        <div class="d-flex justify-content-center">
+            {{ knp_pagination_render(auteurs, 'pagination.html.twig') }}
+        </div>
+    {% endif %}
+{% endblock %}
