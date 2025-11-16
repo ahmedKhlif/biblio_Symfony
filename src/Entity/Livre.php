@@ -35,6 +35,9 @@ class Livre
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $pdf = null;
+
     #[ORM\ManyToOne(inversedBy: 'livres')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Auteur $auteur = null;
@@ -132,6 +135,18 @@ class Livre
     public function setImage(?string $image): static
     {
         $this->image = $image;
+
+        return $this;
+    }
+
+    public function getPdf(): ?string
+    {
+        return $this->pdf;
+    }
+
+    public function setPdf(?string $pdf): static
+    {
+        $this->pdf = $pdf;
 
         return $this;
     }

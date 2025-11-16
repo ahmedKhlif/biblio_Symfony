@@ -19,8 +19,6 @@ final class AuteurController extends AbstractController
     public function index(Request $request, AuteurRepository $auteurRepository, PaginatorInterface $paginator): Response
     {
         $search = $request->query->get('search', '');
-        $sort = $request->query->get('sort', 'nom');
-        $direction = $request->query->get('direction', 'asc');
 
         $queryBuilder = $auteurRepository->createQueryBuilder('a');
 
@@ -29,14 +27,6 @@ final class AuteurController extends AbstractController
                 ->orWhere('a.nom LIKE :search')
                 ->orWhere('a.biographie LIKE :search')
                 ->setParameter('search', '%' . $search . '%');
-        }
-
-        // Add sorting
-        $allowedSorts = ['id', 'prenom', 'nom'];
-        if (in_array($sort, $allowedSorts)) {
-            $queryBuilder->orderBy('a.' . $sort, $direction);
-        } else {
-            $queryBuilder->orderBy('a.id', 'asc');
         }
 
         $pagination = $paginator->paginate(
@@ -48,8 +38,6 @@ final class AuteurController extends AbstractController
         return $this->render('auteur/index.html.twig', [
             'auteurs' => $pagination,
             'search' => $search,
-            'sort' => $sort,
-            'direction' => $direction,
         ]);
     }
 

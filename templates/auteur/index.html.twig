@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+{% extends 'backendofficebase.html.twig' %}
 
 {% block title %}Gestion des Auteurs{% endblock %}
 
@@ -38,33 +38,12 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <table class="table table-bordered table-striped" width="100%" cellspacing="0">
                     <thead>
                         <tr>
-                            <th>
-                                <a href="{{ path('app_auteur_index', {'sort': 'id', 'direction': sort == 'id' and direction == 'asc' ? 'desc' : 'asc', 'search': search}) }}" class="text-decoration-none">
-                                    ID
-                                    {% if sort == 'id' %}
-                                        <i class="fas fa-sort-{{ direction == 'asc' ? 'up' : 'down' }}"></i>
-                                    {% endif %}
-                                </a>
-                            </th>
-                            <th>
-                                <a href="{{ path('app_auteur_index', {'sort': 'prenom', 'direction': sort == 'prenom' and direction == 'asc' ? 'desc' : 'asc', 'search': search}) }}" class="text-decoration-none">
-                                    Prénom
-                                    {% if sort == 'prenom' %}
-                                        <i class="fas fa-sort-{{ direction == 'asc' ? 'up' : 'down' }}"></i>
-                                    {% endif %}
-                                </a>
-                            </th>
-                            <th>
-                                <a href="{{ path('app_auteur_index', {'sort': 'nom', 'direction': sort == 'nom' and direction == 'asc' ? 'desc' : 'asc', 'search': search}) }}" class="text-decoration-none">
-                                    Nom
-                                    {% if sort == 'nom' %}
-                                        <i class="fas fa-sort-{{ direction == 'asc' ? 'up' : 'down' }}"></i>
-                                    {% endif %}
-                                </a>
-                            </th>
+                            <th>{{ knp_pagination_sortable(auteurs, 'ID', 'a.id') }}</th>
+                            <th>{{ knp_pagination_sortable(auteurs, 'Prénom', 'a.prenom') }}</th>
+                            <th>{{ knp_pagination_sortable(auteurs, 'Nom', 'a.nom') }}</th>
                             <th>Biographie</th>
                             <th>Actions</th>
                         </tr>

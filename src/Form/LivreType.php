@@ -40,6 +40,20 @@ class LivreType extends AbstractType
                     ])
                 ],
             ])
+            ->add('pdf', FileType::class, [
+                'label' => 'Document PDF du livre',
+                'mapped' => false,
+                'required' => false,
+                'constraints' => [
+                    new File([
+                        'maxSize' => '10M',
+                        'mimeTypes' => [
+                            'application/pdf',
+                        ],
+                        'mimeTypesMessage' => 'Veuillez uploader un fichier PDF valide',
+                    ])
+                ],
+            ])
             ->add('auteur', EntityType::class, [
                 'class' => Auteur::class,
                 'choice_label' => function (Auteur $auteur) {

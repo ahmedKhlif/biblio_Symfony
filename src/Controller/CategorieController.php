@@ -19,8 +19,6 @@ final class CategorieController extends AbstractController
     public function index(Request $request, CategorieRepository $categorieRepository, PaginatorInterface $paginator): Response
     {
         $search = $request->query->get('search', '');
-        $sort = $request->query->get('sort', 'designation');
-        $direction = $request->query->get('direction', 'asc');
 
         $queryBuilder = $categorieRepository->createQueryBuilder('c');
 
@@ -28,14 +26,6 @@ final class CategorieController extends AbstractController
             $queryBuilder->where('c.designation LIKE :search')
                 ->orWhere('c.description LIKE :search')
                 ->setParameter('search', '%' . $search . '%');
-        }
-
-        // Add sorting
-        $allowedSorts = ['id', 'designation'];
-        if (in_array($sort, $allowedSorts)) {
-            $queryBuilder->orderBy('c.' . $sort, $direction);
-        } else {
-            $queryBuilder->orderBy('c.id', 'asc');
         }
 
         $pagination = $paginator->paginate(
@@ -47,8 +37,6 @@ final class CategorieController extends AbstractController
         return $this->render('categorie/index.html.twig', [
             'categories' => $pagination,
             'search' => $search,
-            'sort' => $sort,
-            'direction' => $direction,
         ]);
     }
 

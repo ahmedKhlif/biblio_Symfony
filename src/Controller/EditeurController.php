@@ -19,8 +19,6 @@ final class EditeurController extends AbstractController
     public function index(Request $request, EditeurRepository $editeurRepository, PaginatorInterface $paginator): Response
     {
         $search = $request->query->get('search', '');
-        $sort = $request->query->get('sort', 'nomEditeur');
-        $direction = $request->query->get('direction', 'asc');
 
         $queryBuilder = $editeurRepository->createQueryBuilder('e');
 
@@ -32,14 +30,6 @@ final class EditeurController extends AbstractController
                 ->setParameter('search', '%' . $search . '%');
         }
 
-        // Add sorting
-        $allowedSorts = ['id', 'nomEditeur', 'pays'];
-        if (in_array($sort, $allowedSorts)) {
-            $queryBuilder->orderBy('e.' . $sort, $direction);
-        } else {
-            $queryBuilder->orderBy('e.id', 'asc');
-        }
-
         $pagination = $paginator->paginate(
             $queryBuilder,
             $request->query->getInt('page', 1),
@@ -49,8 +39,6 @@ final class EditeurController extends AbstractController
         return $this->render('editeur/index.html.twig', [
             'editeurs' => $pagination,
             'search' => $search,
-            'sort' => $sort,
-            'direction' => $direction,
         ]);
     }
 

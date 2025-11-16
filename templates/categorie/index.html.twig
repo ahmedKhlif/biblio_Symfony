@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+{% extends 'backendofficebase.html.twig' %}
 
 {% block title %}Gestion des Catégories{% endblock %}
 
@@ -38,25 +38,11 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <table class="table table-bordered table-striped" width="100%" cellspacing="0">
                     <thead>
                         <tr>
-                            <th>
-                                <a href="{{ path('app_categorie_index', {'sort': 'id', 'direction': sort == 'id' and direction == 'asc' ? 'desc' : 'asc', 'search': search}) }}" class="text-decoration-none">
-                                    ID
-                                    {% if sort == 'id' %}
-                                        <i class="fas fa-sort-{{ direction == 'asc' ? 'up' : 'down' }}"></i>
-                                    {% endif %}
-                                </a>
-                            </th>
-                            <th>
-                                <a href="{{ path('app_categorie_index', {'sort': 'designation', 'direction': sort == 'designation' and direction == 'asc' ? 'desc' : 'asc', 'search': search}) }}" class="text-decoration-none">
-                                    Désignation
-                                    {% if sort == 'designation' %}
-                                        <i class="fas fa-sort-{{ direction == 'asc' ? 'up' : 'down' }}"></i>
-                                    {% endif %}
-                                </a>
-                            </th>
+                            <th>{{ knp_pagination_sortable(categories, 'ID', 'c.id') }}</th>
+                            <th>{{ knp_pagination_sortable(categories, 'Désignation', 'c.designation') }}</th>
                             <th>Description</th>
                             <th>Actions</th>
                         </tr>

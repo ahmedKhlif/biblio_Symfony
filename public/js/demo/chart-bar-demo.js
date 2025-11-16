@@ -1,6 +1,6 @@
 // Set new default font family and font color to mimic Bootstrap's default styling
-Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
-Chart.defaults.global.defaultFontColor = '#858796';
+Chart.defaults.font.family = 'Nunito, -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+Chart.defaults.color = '#858796';
 
 function number_format(number, decimals, dec_point, thousands_sep) {
   // *     example: number_format(1234.56, 2, ',', ' ');
@@ -52,11 +52,9 @@ var myBarChart = new Chart(ctx, {
       }
     },
     scales: {
-      xAxes: [{
-        time: {
-          unit: 'month'
-        },
-        gridLines: {
+      x: {
+        type: 'category',
+        grid: {
           display: false,
           drawBorder: false
         },
@@ -64,8 +62,8 @@ var myBarChart = new Chart(ctx, {
           maxTicksLimit: 6
         },
         maxBarThickness: 25,
-      }],
-      yAxes: [{
+      },
+      y: {
         ticks: {
           min: 0,
           max: 15000,
@@ -76,34 +74,34 @@ var myBarChart = new Chart(ctx, {
             return '$' + number_format(value);
           }
         },
-        gridLines: {
+        grid: {
           color: "rgb(234, 236, 244)",
-          zeroLineColor: "rgb(234, 236, 244)",
-          drawBorder: false,
-          borderDash: [2],
-          zeroLineBorderDash: [2]
+          borderDash: [2]
         }
-      }],
+      }
     },
-    legend: {
-      display: false
-    },
-    tooltips: {
-      titleMarginBottom: 10,
-      titleFontColor: '#6e707e',
-      titleFontSize: 14,
-      backgroundColor: "rgb(255,255,255)",
-      bodyFontColor: "#858796",
-      borderColor: '#dddfeb',
-      borderWidth: 1,
-      xPadding: 15,
-      yPadding: 15,
-      displayColors: false,
-      caretPadding: 10,
-      callbacks: {
-        label: function(tooltipItem, chart) {
-          var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
-          return datasetLabel + ': $' + number_format(tooltipItem.yLabel);
+    plugins: {
+      legend: {
+        display: false
+      },
+      tooltip: {
+        titleMarginBottom: 10,
+        titleColor: '#6e707e',
+        titleFont: {
+          size: 14
+        },
+        backgroundColor: "rgb(255,255,255)",
+        bodyColor: "#858796",
+        borderColor: '#dddfeb',
+        borderWidth: 1,
+        padding: 15,
+        displayColors: false,
+        caretPadding: 10,
+        callbacks: {
+          label: function(context) {
+            var datasetLabel = context.dataset.label || '';
+            return datasetLabel + ': $' + number_format(context.parsed.y);
+          }
         }
       }
     },

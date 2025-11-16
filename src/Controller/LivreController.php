@@ -21,8 +21,6 @@ final class LivreController extends AbstractController
     public function index(Request $request, LivreRepository $livreRepository, PaginatorInterface $paginator): Response
     {
         $search = $request->query->get('search', '');
-        $sort = $request->query->get('sort', 'id');
-        $direction = $request->query->get('direction', 'desc');
 
         $queryBuilder = $livreRepository->createQueryBuilder('l')
             ->leftJoin('l.auteur', 'a')
@@ -40,14 +38,6 @@ final class LivreController extends AbstractController
                 ->setParameter('search', '%' . $search . '%');
         }
 
-        // Add sorting
-        $allowedSorts = ['id', 'titre', 'prix', 'dateEdition', 'nbExemplaires'];
-        if (in_array($sort, $allowedSorts)) {
-            $queryBuilder->orderBy('l.' . $sort, $direction);
-        } else {
-            $queryBuilder->orderBy('l.id', 'asc');
-        }
-
         $pagination = $paginator->paginate(
             $queryBuilder,
             $request->query->getInt('page', 1),
@@ -57,8 +47,6 @@ final class LivreController extends AbstractController
         return $this->render('livre/index.html.twig', [
             'livres' => $pagination,
             'search' => $search,
-            'sort' => $sort,
-            'direction' => $direction,
         ]);
     }
 
@@ -71,6 +59,7 @@ final class LivreController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $imageFile = $form->get('image')->getData();
+            $pdfFile = $form->get('pdf')->getData();
 
             if ($imageFile) {
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
@@ -87,6 +76,23 @@ final class LivreController extends AbstractController
                 }
 
                 $livre->setImage($newFilename);
+            }
+
+            if ($pdfFile) {
+                $originalFilename = pathinfo($pdfFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$pdfFile->guessExtension();
+
+                try {
+                    $pdfFile->move(
+                        $this->getParameter('pdf_directory'),
+                        $newFilename
+                    );
+                } catch (FileException $e) {
+                    // handle exception if something happens during file upload
+                }
+
+                $livre->setPdf($newFilename);
             }
 
             $entityManager->persist($livre);
@@ -117,6 +123,7 @@ final class LivreController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $imageFile = $form->get('image')->getData();
+            $pdfFile = $form->get('pdf')->getData();
 
             if ($imageFile) {
                 $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
@@ -133,6 +140,23 @@ final class LivreController extends AbstractController
                 }
 
                 $livre->setImage($newFilename);
+            }
+
+            if ($pdfFile) {
+                $originalFilename = pathinfo($pdfFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$pdfFile->guessExtension();
+
+                try {
+                    $pdfFile->move(
+                        $this->getParameter('pdf_directory'),
+                        $newFilename
+                    );
+                } catch (FileException $e) {
+                    // handle exception if something happens during file upload
+                }
+
+                $livre->setPdf($newFilename);
             }
 
             $entityManager->flush();
