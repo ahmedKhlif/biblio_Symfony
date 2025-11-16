@@ -1,6 +1,6 @@
 # 📚 Bibliothèque Management System
 
-A comprehensive library management system built with Symfony 7, featuring a modern admin interface using SB Admin 2 template. Manage books, authors, categories, and publishers with advanced CRUD operations, image uploads, and real-time statistics.
+A comprehensive library management system built with Symfony 7, featuring a modern admin interface using SB Admin 2 template. Manage books, authors, categories, and publishers with advanced CRUD operations, image uploads, PDF document management, and real-time statistics.
 
 ## ✨ Features
 
@@ -11,6 +11,9 @@ A comprehensive library management system built with Symfony 7, featuring a mode
 - **Dual View System** (Table & Grid views for books)
 - **Stock Management** with availability badges
 - **Image Upload** for book covers (JPEG, PNG, GIF)
+- **PDF Document Management** with upload, viewing, and download (PDF files up to 10MB)
+- **Inline PDF Viewer** with modal full-screen option
+- **Drag-and-Drop File Upload** for both images and PDFs
 - **Responsive Design** for all devices
 
 ### 📊 Dashboard & Analytics
@@ -48,10 +51,10 @@ A comprehensive library management system built with Symfony 7, featuring a mode
 ### Step-by-Step Installation
 
 1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/bibliotheque-management.git
-   cd bibliotheque-management
-   ```
+    ```bash
+    git clone https://github.com/ahmedKhlif/biblio_Symfony.git
+    cd biblio_Symfony
+    ```
 
 2. **Install PHP dependencies**
    ```bash
@@ -87,10 +90,11 @@ A comprehensive library management system built with Symfony 7, featuring a mode
    php bin/console doctrine:fixtures:load
    ```
 
-8. **Create Upload Directory**
-   ```bash
-   mkdir -p public/uploads/images
-   ```
+8. **Create Upload Directories**
+    ```bash
+    mkdir -p public/uploads/images
+    mkdir -p public/uploads/pdfs
+    ```
 
 9. **Install Assets**
    ```bash
@@ -111,7 +115,8 @@ A comprehensive library management system built with Symfony 7, featuring a mode
 ## 📖 Usage
 
 ### Accessing the Application
-- **Dashboard**: `http://localhost:8000/backoffice`
+- **Dashboard** (Default): `http://localhost:8000/` (redirects to backoffice)
+- **Backoffice Dashboard**: `http://localhost:8000/backoffice`
 - **Books Management**: `http://localhost:8000/livre`
 - **Authors**: `http://localhost:8000/auteur`
 - **Categories**: `http://localhost:8000/categorie`
@@ -120,7 +125,10 @@ A comprehensive library management system built with Symfony 7, featuring a mode
 ### Key Features Guide
 
 #### 📚 Book Management
-- **Add Books**: Upload cover images, set relationships with authors/categories/publishers
+- **Add Books**: Upload cover images and PDF documents, set relationships with authors/categories/publishers
+- **PDF Management**: Upload, view, and download PDF documents (up to 10MB)
+- **Inline PDF Viewer**: View PDFs directly in the browser with full-screen modal option
+- **Drag-and-Drop Upload**: Easy file upload for both images and PDFs with validation
 - **View Modes**: Switch between table view (detailed data) and grid view (visual cards)
 - **Stock Status**: Green badges for available books, red for out of stock
 - **Search & Sort**: Find books by title, author, category, or ISBN
@@ -155,7 +163,8 @@ bibliotheque-management/
 ├── config/                    # Symfony configuration
 ├── migrations/                # Database migrations
 ├── public/                    # Public web directory
-│   └── uploads/images/        # Uploaded book images
+│   ├── uploads/images/        # Uploaded book images
+│   └── uploads/pdfs/          # Uploaded PDF documents
 ├── src/                       # Application source code
 │   ├── Controller/            # Symfony controllers
 │   ├── Entity/                # Doctrine entities
@@ -207,10 +216,11 @@ bibliotheque-management/
 
 - **CSRF Protection** on all forms
 - **Input Validation** and sanitization
-- **File Upload Security** with type and size restrictions
+- **File Upload Security** with type and size restrictions (Images: JPEG, PNG, GIF up to 1MB; PDFs up to 10MB)
+- **PDF File Validation** ensuring only legitimate PDF documents are accepted
 - **SQL Injection Prevention** via Doctrine ORM
 - **XSS Protection** through Twig escaping
-- **Secure File Storage** with safe naming
+- **Secure File Storage** with safe naming and organized directory structure
 
 ## 📱 Responsive Design
 
@@ -256,5 +266,13 @@ If you have any questions or need help, please:
 3. Contact the maintainers
 
 ---
+
+## 📋 Recent Updates (v2.0.0)
+
+- ✅ **PDF Document Management**: Upload, view, and download PDF documents for books
+- ✅ **Enhanced File Upload**: Drag-and-drop interface for both images and PDFs
+- ✅ **Inline PDF Viewer**: View PDFs directly in browser with modal full-screen option
+- ✅ **Backoffice as Default**: Root URL (/) now redirects to backoffice dashboard
+- ✅ **Improved Security**: Enhanced file validation and secure PDF handling
 
 **Made with ❤️ using Symfony 7 & SB Admin 2**
