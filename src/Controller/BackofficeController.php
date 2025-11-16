@@ -12,6 +12,12 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class BackofficeController extends AbstractController
 {
+    #[Route('/', name: 'app_home')]
+    public function home(): Response
+    {
+        return $this->redirectToRoute('app_backoffice_dashboard');
+    }
+
     #[Route('/backoffice', name: 'app_backoffice_dashboard')]
     public function dashboard(
         LivreRepository $livreRepository,
