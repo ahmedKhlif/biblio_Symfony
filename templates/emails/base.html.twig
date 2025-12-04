@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{% block subject %}{% endblock %}</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #007bff; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; background: #f8f9fa; }
+        .footer { background: #343a40; color: white; padding: 10px; text-align: center; font-size: 12px; }
+        h1, h2 { color: #007bff; }
+        a { color: #007bff; text-decoration: none; }
+        .button { display: inline-block; background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>BiblioApp</h1>
+            <p>Your Personal Library Companion</p>
+        </div>
+        <div class="content">
+            {% block body %}{% endblock %}
+        </div>
+        <div class="footer">
+            <p>&copy; 2025 BiblioApp. All rights reserved.</p>
+            <p>If you have any questions, contact us at support@biblioapp.tn</p>
+        </div>
+    </div>
+</body>
+</html>

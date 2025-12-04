@@ -1,0 +1,288 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Historique d'emprunt - {{ livre.titre }}{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<link href="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.8/main.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.8/main.min.css" rel="stylesheet">
+<style>
+    .borrowing-calendar {
+        max-width: 100%;
+        margin: 0 auto;
+    }
+
+    .calendar-container {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .status-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .status-item {
+        display: flex;
+        align-items: center;
+        font-size: 0.9rem;
+    }
+
+    .status-color {
+        width: 16px;
+        height: 16px;
+        border-radius: 3px;
+        margin-right: 8px;
+        display: inline-block;
+    }
+
+    .book-info-card {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .book-info-card .book-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .book-info-card .book-author {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin-bottom: 15px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 10px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 8px;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        display: block;
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        opacity: 0.8;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<!-- Page Heading -->
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-calendar-alt text-primary mr-2"></i>Historique d'emprunt
+        </h1>
+        <p class="mb-0 text-muted">{{ livre.titre }}</p>
+    </div>
+    <div>
+        <a href="{{ path('app_livre_show', {'id': livre.id}) }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm mr-2">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour au livre
+        </a>
+        <a href="{{ path('app_borrowing_my_calendar') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-calendar fa-sm text-white-50"></i> Mon calendrier général
+        </a>
+    </div>
+</div>
+
+<!-- Book Info -->
+<div class="book-info-card">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <div class="book-title">{{ livre.titre }}</div>
+            <div class="book-author">par {{ livre.auteur.prenom }} {{ livre.auteur.nom }}</div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-number">{{ livre.nbExemplaires }}</span>
+                    <span class="stat-label">Exemplaires</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">{{ livre.getActiveLoansCount() }}</span>
+                    <span class="stat-label">En cours</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">{{ livre.getActiveReservationsCount() }}</span>
+                    <span class="stat-label">En attente</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 text-center">
+            {% if livre.image %}
+                <img src="{{ asset('uploads/livres/' ~ livre.image) }}" alt="{{ livre.titre }}" class="img-fluid rounded" style="max-height: 120px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+            {% else %}
+                <div class="bg-white bg-opacity-25 rounded p-4 d-inline-block">
+                    <i class="fas fa-book fa-3x"></i>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <!-- Status Legend -->
+        <div class="status-legend">
+            <div class="status-item">
+                <span class="status-color" style="background-color: #28a745;"></span>
+                <span>En cours</span>
+            </div>
+            <div class="status-item">
+                <span class="status-color" style="background-color: #dc3545;"></span>
+                <span>En retard</span>
+            </div>
+            <div class="status-item">
+                <span class="status-color" style="background-color: #6c757d;"></span>
+                <span>Retourné</span>
+            </div>
+            <div class="status-item">
+                <span class="status-color" style="background-color: #ffc107;"></span>
+                <span>Demandé</span>
+            </div>
+            <div class="status-item">
+                <span class="status-color" style="background-color: #17a2b8;"></span>
+                <span>Approuvé</span>
+            </div>
+        </div>
+
+        <!-- Calendar -->
+        <div class="calendar-container">
+            <div id="borrowing-calendar" class="borrowing-calendar"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Borrowing Request Button -->
+{% if livre.isBorrowable %}
+    <div class="text-center">
+        {% if livre.isAvailableForBorrowing() %}
+            <a href="{{ path('app_borrowing_request', {'id': livre.id}) }}" class="btn btn-success btn-lg">
+                <i class="fas fa-plus-circle mr-2"></i>Demander un emprunt
+            </a>
+        {% else %}
+            <a href="{{ path('app_borrowing_request', {'id': livre.id}) }}" class="btn btn-warning btn-lg">
+                <i class="fas fa-list mr-2"></i>M'inscrire à la liste d'attente
+            </a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.8/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.8/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.8/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.8/locales/fr.global.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Small delay to ensure DOM is fully rendered
+    setTimeout(function() {
+        const calendarEl = document.getElementById('borrowing-calendar');
+        
+        // Verify element exists
+        if (!calendarEl) {
+            console.error('Calendar element not found');
+            return;
+        }
+        
+        // Parse events safely
+        let events = [];
+        try {
+            const rawEvents = {{ events|raw }};
+            events = Array.isArray(rawEvents) ? rawEvents : [];
+            console.log('Calendar events loaded:', events);
+        } catch (error) {
+            console.error('Error parsing calendar events:', error);
+            events = [];
+        }
+
+        // Check if FullCalendar is available (wait with delay if needed)
+        const checkCalendar = setInterval(function() {
+            if (typeof FullCalendar !== 'undefined') {
+                clearInterval(checkCalendar);
+                initializeCalendar();
+            }
+        }, 100);
+
+        // Timeout after 5 seconds
+        setTimeout(function() {
+            clearInterval(checkCalendar);
+            if (typeof FullCalendar === 'undefined') {
+                console.error('FullCalendar library failed to load');
+            }
+        }, 5000);
+
+        function initializeCalendar() {
+            try {
+                const calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    locale: 'fr',
+                    events: events,
+                    eventDisplay: 'block',
+                    eventTimeFormat: {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        meridiem: false
+                    },
+                    dayMaxEvents: true,
+                    moreLinkClick: 'popover',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,dayGridWeek'
+                    },
+                    buttonText: {
+                        today: 'Aujourd\'hui',
+                        month: 'Mois',
+                        week: 'Semaine'
+                    },
+                    eventClick: function(info) {
+                        // Prevent navigation if event has URL
+                        if (info.event.url) {
+                            window.open(info.event.url, '_blank');
+                            info.jsEvent.preventDefault();
+                        }
+                    }
+                });
+
+                calendar.render();
+                console.log('Calendar initialized successfully');
+            } catch (error) {
+                console.error('Error initializing calendar:', error);
+            }
+        }
+
+        // If FullCalendar is already loaded, initialize immediately
+        if (typeof FullCalendar !== 'undefined') {
+            initializeCalendar();
+        }
+    }, 100); // Small delay for DOM rendering
+});
+</script>
+{% endblock %}

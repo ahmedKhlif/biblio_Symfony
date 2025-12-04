@@ -13,9 +13,11 @@
             <a href="{{ path('app_livre_index') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
                 <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour à la liste
             </a>
+            {% if is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') %}
             <a href="{{ path('app_livre_edit', {'id': livre.id}) }}" class="d-none d-sm-inline-block btn btn-sm btn-warning shadow-sm">
                 <i class="fas fa-edit fa-sm text-white-50"></i> Modifier
             </a>
+            {% endif %}
         </div>
     </div>
 
@@ -35,6 +37,7 @@
                         </div>
                     {% endif %}
 
+                    {% if is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') %}
                     <div class="mb-3">
                         {% if livre.nbExemplaires > 0 %}
                             <span class="badge badge-success badge-pill px-3 py-2">
@@ -43,6 +46,20 @@
                         {% else %}
                             <span class="badge badge-danger badge-pill px-3 py-2">
                                 <i class="fas fa-times-circle mr-1"></i>Épuisé
+                            </span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Borrowable Status -->
+                    <div class="mb-3">
+                        {% if livre.isBorrowable %}
+                            <span class="badge badge-info badge-pill px-3 py-2">
+                                <i class="fas fa-book-open mr-1"></i>Disponible pour emprunt
+                            </span>
+                        {% else %}
+                            <span class="badge badge-secondary badge-pill px-3 py-2">
+                                <i class="fas fa-ban mr-1"></i>Non empruntable
                             </span>
                         {% endif %}
                     </div>
@@ -90,17 +107,19 @@
                                     <td class="text-success font-weight-bold">{{ livre.prix }} €</td>
                                 </tr>
                                 <tr>
-                                    <td class="font-weight-bold text-muted">Exemplaires:</td>
-                                    <td>{{ livre.nbExemplaires }}</td>
-                                </tr>
-                                <tr>
                                     <td class="font-weight-bold text-muted">Date édition:</td>
                                     <td>{{ livre.dateEdition|date('d/m/Y') }}</td>
+                                </tr>
+                                {% if is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') %}
+                                <tr>
+                                    <td class="font-weight-bold text-muted">Exemplaires:</td>
+                                    <td>{{ livre.nbExemplaires }}</td>
                                 </tr>
                                 <tr>
                                     <td class="font-weight-bold text-muted">Valeur totale:</td>
                                     <td class="text-info font-weight-bold">{{ (livre.prix * livre.nbExemplaires)|number_format(2, ',', ' ') }} €</td>
                                 </tr>
+                                {% endif %}
                             </table>
                         </div>
                     </div>
@@ -192,9 +211,230 @@
                 </div>
             </div>
             {% endif %}
+
+            <!-- User Actions -->
+            {% if is_granted('ROLE_USER') %}
+            <div class="card shadow mb-4 border-left-primary">
+                <div class="card-header py-3" style="background: linear-gradient(135deg, #009688 0%, #4CAF50 100%); color: white;">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-user mr-2"></i>Mes Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% set userProgress = null %}
+                    {% for progress in app.user.readingProgress %}
+                        {% if progress.livre.id == livre.id %}
+                            {% set userProgress = progress %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% set hasActiveLoan = false %}
+                    {% for loan in app.user.loans %}
+                        {% if loan.livre.id == livre.id and (loan.status == 'active' or loan.status == 'approved') %}
+                            {% set hasActiveLoan = true %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% set hasPurchasedBook = false %}
+                    {% for purchasedBook in app.user.purchasedBooks %}
+                        {% if purchasedBook.id == livre.id %}
+                            {% set hasPurchasedBook = true %}
+                        {% endif %}
+                    {% endfor %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <!-- Wishlist Button -->
+                            <form action="{{ path('app_user_wishlist_add', {'id': livre.id}) }}" method="post" class="mb-3">
+                                <input type="hidden" name="_token" value="{{ csrf_token('add-wishlist-' ~ livre.id) }}">
+                                <button type="submit" class="btn btn-success btn-block font-weight-bold"
+                                        style="background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%); border: none;">
+                                    <i class="fas fa-heart mr-2"></i>Ajouter à ma liste de souhaits
+                                </button>
+                            </form>
+
+                            <!-- Purchase/Add to Cart Logic -->
+                            {% if hasPurchasedBook %}
+                                <!-- User owns this book -->
+                                <div class="alert alert-success mb-3">
+                                    <i class="fas fa-check-circle mr-2"></i>
+                                    <strong>Livre possédé</strong><br>
+                                    <small>Vous avez acheté ce livre.</small>
+                                    <br><a href="{{ path('app_user_owned_books') }}" class="btn btn-sm btn-success mt-2">
+                                        <i class="fas fa-book mr-1"></i>Voir mes livres achetés
+                                    </a>
+                                </div>
+                            {% else %}
+                                <!-- User doesn't own this book - show Add to Cart -->
+                                {% if livre.nbExemplaires > 0 %}
+                                <form action="{{ path('app_cart_add', {'id': livre.id}) }}" method="post" class="mb-3">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('add-cart-' ~ livre.id) }}">
+                                    <input type="hidden" name="quantity" value="1">
+                                    <button type="submit" class="btn btn-primary btn-block font-weight-bold"
+                                            style="background: linear-gradient(135deg, #009688 0%, #26A69A 100%); border: none;">
+                                        <i class="fas fa-shopping-cart mr-2"></i>Ajouter au panier
+                                    </button>
+                                </form>
+                                {% else %}
+                                <div class="alert alert-warning mb-3">
+                                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                                    <strong>Livre indisponible</strong><br>
+                                    <small>Ce livre n'est pas en stock actuellement.</small>
+                                </div>
+                                {% endif %}
+                            {% endif %}
+
+                            <!-- Borrowing Logic (only if not purchased and borrowable) -->
+                            {% if not hasPurchasedBook and livre.isBorrowable %}
+                                {% if livre.isAvailableForBorrowing() %}
+                                    <!-- Book is available for borrowing -->
+                                    <a href="{{ path('app_borrowing_request', {'id': livre.id}) }}" class="btn btn-warning btn-block font-weight-bold mb-3"
+                                       style="background: linear-gradient(135deg, #FF6F00 0%, #FF9800 100%); border: none; color: white;">
+                                        <i class="fas fa-book-reader mr-2"></i>Demander un emprunt
+                                    </a>
+                                {% elseif hasActiveLoan %}
+                                    <!-- User has active loan -->
+                                    <div class="alert alert-info mb-3">
+                                        <i class="fas fa-info-circle mr-2"></i>
+                                        <strong>Emprunt en cours</strong><br>
+                                        <small>Vous avez déjà un emprunt actif pour ce livre.</small>
+                                        <br><a href="{{ path('app_loan_index') }}" class="btn btn-sm btn-info mt-2">Voir mes emprunts</a>
+                                    </div>
+                                {% else %}
+                                    <!-- Book not available - show reservation option -->
+                                    <div class="alert alert-warning mb-3">
+                                        <i class="fas fa-clock mr-2"></i>
+                                        <strong>Livre indisponible</strong><br>
+                                        <small>Tous les exemplaires sont actuellement empruntés.</small>
+                                        <br><a href="{{ path('app_borrowing_request', {'id': livre.id}) }}" class="btn btn-outline-warning btn-sm mt-2">
+                                            <i class="fas fa-list mr-1"></i>M'inscrire à la liste d'attente
+                                        </a>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <!-- Reading Progress Section -->
+                            {% set canAccessProgress = false %}
+                            {% if app.user %}
+                                {% if livre.createdBy == app.user %}
+                                    {% set canAccessProgress = true %}
+                                {% else %}
+                                    {# Check if user has active/overdue loan #}
+                                    {% for loan in livre.loans %}
+                                        {% if loan.user == app.user and (loan.status == 'active' or loan.status == 'overdue') %}
+                                            {% set canAccessProgress = true %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {# Check if user purchased this book #}
+                                    {% if not canAccessProgress %}
+                                        {% for purchasedBook in app.user.purchasedBooks %}
+                                            {% if purchasedBook.id == livre.id %}
+                                                {% set canAccessProgress = true %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endif %}
+                            {% endif %}
+
+                            {% if canAccessProgress %}
+                                {% set userProgress = null %}
+                                {% for progress in app.user.readingProgress %}
+                                    {% if progress.livre.id == livre.id %}
+                                        {% set userProgress = progress %}
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if userProgress %}
+                                    <div class="mb-3">
+                                        <h6 class="font-weight-bold text-info mb-2">
+                                            <i class="fas fa-chart-line mr-1"></i>Progression de Lecture
+                                        </h6>
+                                        <div class="progress mb-2" style="height: 12px;">
+                                            <div class="progress-bar {% if userProgress.isCompleted %}bg-success{% else %}bg-info{% endif %}"
+                                                 role="progressbar" style="width: {{ userProgress.progressPercentage }}%"></div>
+                                        </div>
+                                        <small class="text-muted">
+                                            {{ userProgress.progressPercentage }}% terminé
+                                            {% if userProgress.isCompleted %}
+                                                <span class="badge badge-success ml-1">Terminé</span>
+                                            {% endif %}
+                                        </small>
+                                        <div class="mt-2">
+                                            <small class="text-muted">
+                                                Page {{ userProgress.currentPage ?: 0 }} sur {{ livre.nbPages }}
+                                            </small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Reading Progress Button -->
+                                    <a href="{{ path('app_reading_progress_show', {'id': livre.id}) }}" class="btn btn-info btn-block mb-2">
+                                        <i class="fas fa-chart-line mr-1"></i>Voir ma progression détaillée
+                                    </a>
+
+                                    {% if userProgress.isCompleted %}
+                                    <div class="alert alert-success">
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                        <strong>Livre terminé!</strong> Vous pouvez maintenant laisser un avis.
+                                    </div>
+                                    {% endif %}
+                                {% else %}
+                                    <!-- Start Reading Button -->
+                                    <div class="mb-3">
+                                        <h6 class="font-weight-bold text-success mb-2">
+                                            <i class="fas fa-play-circle mr-1"></i>Commencer la lecture
+                                        </h6>
+                                        <p class="small text-muted mb-3">
+                                            Suivez votre progression de lecture avec des marque-pages et des notes personnelles.
+                                        </p>
+                                        <a href="{{ path('app_reading_progress_show', {'id': livre.id}) }}" class="btn btn-success btn-block">
+                                            <i class="fas fa-play mr-1"></i>Commencer à lire
+                                        </a>
+                                    </div>
+                                {% endif %}
+
+                                <!-- PDF Access (for owners and active borrowers) -->
+                                {% if livre.pdf %}
+                                    <div class="mb-3">
+                                        <h6 class="font-weight-bold text-danger mb-2">
+                                            <i class="fas fa-file-pdf mr-1"></i>Accès PDF
+                                        </h6>
+                                        <div class="btn-group-vertical w-100">
+                                            <a href="{{ path('app_pdf_view', {'id': livre.id}) }}" class="btn btn-danger btn-sm" target="_blank">
+                                                <i class="fas fa-eye mr-1"></i>Lire le PDF
+                                            </a>
+                                            <a href="{{ path('app_pdf_download', {'id': livre.id}) }}" class="btn btn-outline-danger btn-sm">
+                                                <i class="fas fa-download mr-1"></i>Télécharger PDF
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle mr-2"></i>
+                                    <strong>Progression disponible</strong><br>
+                                    <small>Empruntez ou achetez ce livre pour suivre votre progression de lecture et accéder aux fonctionnalités avancées.</small>
+                                </div>
+                            {% endif %}
+
+                            <!-- Borrowing History Calendar Link -->
+                            {% if livre.isBorrowable %}
+                            <div class="mt-3">
+                                <a href="{{ path('app_borrowing_calendar', {'id': livre.id}) }}" class="btn btn-outline-primary btn-block">
+                                    <i class="fas fa-calendar-alt mr-1"></i>Voir mon historique d'emprunt
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 
+    {% if is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') %}
     <!-- Statistics and Insights -->
     <div class="row mb-4">
         <div class="col-lg-6">
@@ -277,30 +517,64 @@
             </div>
         </div>
     </div>
+    {% endif %}
 
-    <!-- PDF Viewer Section -->
-    {% if livre.pdf %}
+    <!-- Audit Information - Admin Only -->
+    {% if is_granted('ROLE_ADMIN') %}
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-danger">
-                        <i class="fas fa-file-pdf mr-2"></i>Document PDF du livre
+            <div class="card shadow border-left-danger">
+                <div class="card-header py-3 bg-gradient-danger">
+                    <h6 class="m-0 font-weight-bold text-white">
+                        <i class="fas fa-shield-alt mr-2"></i>Informations d'Audit (Administrateur)
                     </h6>
                 </div>
                 <div class="card-body">
-                    <div class="text-center mb-3">
-                        <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#pdfModal">
-                            <i class="fas fa-eye mr-1"></i>Ouvrir en plein écran
-                        </button>
-                        <a href="{{ asset('uploads/pdfs/' ~ livre.pdf) }}" target="_blank" class="btn btn-outline-danger btn-sm">
-                            <i class="fas fa-download mr-1"></i>Télécharger
-                        </a>
-                    </div>
-                    <div class="pdf-viewer-container" style="height: 600px; border: 1px solid #ddd; border-radius: 5px;">
-                        <iframe src="{{ asset('uploads/pdfs/' ~ livre.pdf) }}" width="100%" height="100%" style="border: none; border-radius: 5px;">
-                            Votre navigateur ne supporte pas l'affichage des PDF. <a href="{{ asset('uploads/pdfs/' ~ livre.pdf) }}">Téléchargez le PDF</a>
-                        </iframe>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="font-weight-bold text-muted" width="40%">Créé le:</td>
+                                    <td>
+                                        <i class="fas fa-calendar-plus text-success mr-1"></i>
+                                        {{ livre.createdAtFormatted }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold text-muted">Créé par:</td>
+                                    <td>
+                                        <i class="fas fa-user-plus text-success mr-1"></i>
+                                        {% if livre.createdBy %}
+                                            {{ livre.createdBy.username ?: livre.createdBy.email }}
+                                        {% else %}
+                                            <span class="text-muted">Système</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="font-weight-bold text-muted" width="40%">Modifié le:</td>
+                                    <td>
+                                        <i class="fas fa-calendar-check text-warning mr-1"></i>
+                                        {{ livre.updatedAtFormatted }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold text-muted">Modifié par:</td>
+                                    <td>
+                                        <i class="fas fa-user-edit text-warning mr-1"></i>
+                                        {% if livre.updatedBy %}
+                                            {{ livre.updatedBy.username ?: livre.updatedBy.email }}
+                                        {% else %}
+                                            <span class="text-muted">Système</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -308,32 +582,281 @@
     </div>
     {% endif %}
 
-    <!-- PDF Modal -->
-    <div class="modal fade" id="pdfModal" tabindex="-1" role="dialog" aria-labelledby="pdfModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title text-danger" id="pdfModalLabel">
-                        <i class="fas fa-file-pdf mr-2"></i>{{ livre.titre }} - Document PDF
-                    </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+    <!-- PDF Access Section -->
+    {% if livre.pdf %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-danger">
+                        <i class="fas fa-file-pdf mr-2"></i>Accès au Document PDF
+                    </h6>
                 </div>
-                <div class="modal-body p-0">
-                    <iframe src="{{ asset('uploads/pdfs/' ~ livre.pdf) }}" width="100%" height="80vh" style="border: none;">
-                        Votre navigateur ne supporte pas l'affichage des PDF. <a href="{{ asset('uploads/pdfs/' ~ livre.pdf) }}">Téléchargez le PDF</a>
-                    </iframe>
-                </div>
-                <div class="modal-footer">
-                    <a href="{{ asset('uploads/pdfs/' ~ livre.pdf) }}" target="_blank" class="btn btn-danger">
-                        <i class="fas fa-download mr-1"></i>Télécharger PDF
-                    </a>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                <div class="card-body">
+                    {% set canAccessPdf = false %}
+                    {% if app.user %}
+                        {% if livre.createdBy == app.user %}
+                            {% set canAccessPdf = true %}
+                        {% else %}
+                            {% for loan in livre.loans %}
+                                {% if loan.user == app.user and (loan.status == 'active' or loan.status == 'overdue') %}
+                                    {% set canAccessPdf = true %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endif %}
+
+                    {% if canAccessPdf %}
+                        <!-- User has access to PDF (owner or active borrower) -->
+                        <div class="alert alert-success mb-3">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            <strong>Accès PDF autorisé</strong><br>
+                            <small>Vous pouvez consulter et télécharger le document PDF de ce livre.</small>
+                        </div>
+
+                        <div class="text-center mb-3">
+                            <a href="{{ path('app_pdf_view', {'id': livre.id}) }}" class="btn btn-danger btn-lg mr-2" target="_blank">
+                                <i class="fas fa-eye mr-1"></i>Lire en plein écran
+                            </a>
+                            <a href="{{ path('app_pdf_download', {'id': livre.id}) }}" class="btn btn-outline-danger btn-lg">
+                                <i class="fas fa-download mr-1"></i>Télécharger PDF
+                            </a>
+                        </div>
+
+                        <div class="pdf-viewer-container border rounded" style="height: 600px;">
+                            <iframe src="{{ path('app_pdf_view', {'id': livre.id}) }}" width="100%" height="100%" style="border: none; border-radius: 5px;">
+                                Votre navigateur ne supporte pas l'affichage des PDF.
+                                <a href="{{ path('app_pdf_download', {'id': livre.id}) }}">Téléchargez le PDF</a>
+                            </iframe>
+                        </div>
+                    {% else %}
+                        <!-- User doesn't have access to PDF -->
+                        <div class="text-center py-5">
+                            <i class="fas fa-lock fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted mb-3">Accès PDF Restreint</h5>
+                            <p class="text-muted mb-4">
+                                Le document PDF n'est accessible qu'aux propriétaires du livre et aux emprunteurs actifs.
+                            </p>
+
+                            {% if livre.isBorrowable %}
+                                {% if livre.isAvailableForBorrowing() %}
+                                    <!-- Book is available for borrowing -->
+                                    <a href="{{ path('app_borrowing_request', {'id': livre.id}) }}" class="btn btn-primary btn-lg mr-2">
+                                        <i class="fas fa-book-reader mr-2"></i>Emprunter pour accéder au PDF
+                                    </a>
+                                {% else %}
+                                    <!-- Book not available - show reservation option -->
+                                    <div class="alert alert-warning mb-3">
+                                        <i class="fas fa-clock mr-2"></i>
+                                        <strong>Livre indisponible actuellement</strong><br>
+                                        <small>Inscrivez-vous à la liste d'attente pour accéder au PDF dès qu'il sera disponible.</small>
+                                    </div>
+                                    <a href="{{ path('app_borrowing_request', {'id': livre.id}) }}" class="btn btn-outline-primary btn-lg">
+                                        <i class="fas fa-list mr-2"></i>M'inscrire à la liste d'attente
+                                    </a>
+                                {% endif %}
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle mr-2"></i>
+                                    Ce livre n'est pas disponible à l'emprunt.
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
+    {% endif %}
+
+    <!-- PDF Modal -->
+    {% if livre.pdf %}
+        {% set canAccessPdf = false %}
+        {% if app.user %}
+            {% if livre.createdBy == app.user %}
+                {% set canAccessPdf = true %}
+            {% else %}
+                {% for loan in livre.loans %}
+                    {% if loan.user == app.user and (loan.status == 'active' or loan.status == 'overdue') %}
+                        {% set canAccessPdf = true %}
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endif %}
+
+        {% if canAccessPdf %}
+        <div class="modal fade" id="pdfModal" tabindex="-1" role="dialog" aria-labelledby="pdfModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title text-danger" id="pdfModalLabel">
+                            <i class="fas fa-file-pdf mr-2"></i>{{ livre.titre }} - Document PDF
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body p-0">
+                        <iframe src="{{ path('app_pdf_view', {'id': livre.id}) }}" width="100%" height="80vh" style="border: none;">
+                            Votre navigateur ne supporte pas l'affichage des PDF.
+                            <a href="{{ path('app_pdf_download', {'id': livre.id}) }}">Téléchargez le PDF</a>
+                        </iframe>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="{{ path('app_pdf_download', {'id': livre.id}) }}" target="_blank" class="btn btn-danger">
+                            <i class="fas fa-download mr-1"></i>Télécharger PDF
+                        </a>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+
+    <!-- Reviews Section -->
+    {% if is_granted('ROLE_USER') %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-star mr-2"></i>Avis et Commentaires
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% set userReview = null %}
+                    {% for review in livre.reviews %}
+                        {% if review.user == app.user %}
+                            {% set userReview = review %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if userReview %}
+                        <div class="alert alert-info">
+                            <h6 class="font-weight-bold mb-2">
+                                <i class="fas fa-user mr-1"></i>Votre avis
+                            </h6>
+                            <div class="mb-2">
+                                {% for i in 1..5 %}
+                                    <i class="fas fa-star {% if i <= userReview.rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                {% endfor %}
+                                <span class="ml-2">{{ userReview.rating }}/5</span>
+                                {% if userReview.verified %}
+                                    <span class="badge badge-success ml-2">
+                                        <i class="fas fa-check-circle mr-1"></i>Vérifié
+                                    </span>
+                                {% endif %}
+                            </div>
+                            {% if userReview.comment %}
+                                <p class="mb-2">{{ userReview.comment }}</p>
+                            {% endif %}
+                            {% if userReview.images %}
+                                <div class="row mb-2">
+                                    {% for image in userReview.images %}
+                                        <div class="col-md-3 col-sm-6 mb-2">
+                                            <img src="{{ asset('uploads/review_images/' ~ image) }}" alt="Review image" class="img-fluid rounded" style="max-height: 100px; object-fit: cover; cursor: pointer;" onclick="openImageModal('{{ asset('uploads/review_images/' ~ image) }}')">
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">Publié le {{ userReview.createdAt|date('d/m/Y à H:i') }}</small>
+                                <div>
+                                    <a href="{{ path('app_review_edit', {'id': userReview.id}) }}" class="btn btn-sm btn-outline-primary mr-1">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form method="post" action="{{ path('app_review_delete', {'id': userReview.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer votre avis ?')">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ userReview.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center mb-3">
+                            <a href="{{ path('app_review_create', {'id': livre.id}) }}" class="btn btn-primary">
+                                <i class="fas fa-plus mr-1"></i>Laisser un avis
+                            </a>
+                        </div>
+                    {% endif %}
+
+                    {% if livre.reviews|length > 0 %}
+                        <hr>
+                        <h6 class="font-weight-bold mb-3">
+                            <i class="fas fa-comments mr-2"></i>Tous les avis ({{ livre.reviews|length }})
+                        </h6>
+                        {% for review in livre.reviews %}
+                        <div class="review-item mb-4 p-3 border rounded">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div class="d-flex align-items-center">
+                                    {% if review.user.profilePicture %}
+                                        <img src="{{ asset('uploads/profile_pictures/' ~ review.user.profilePicture) }}" alt="Profile" class="rounded-circle mr-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="bg-gradient-purple rounded-circle d-flex align-items-center justify-content-center mr-2" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-user text-white" style="font-size: 16px;"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div>
+                                        <strong>{{ review.user.username ?: review.user.email }}</strong>
+                                        <div class="mb-1">
+                                            {% for i in 1..5 %}
+                                                <i class="fas fa-star {% if i <= review.rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                            {% endfor %}
+                                            <span class="ml-2 small">{{ review.rating }}/5</span>
+                                            {% if review.verified %}
+                                                <span class="badge badge-success ml-2" style="font-size: 10px;">
+                                                    <i class="fas fa-check-circle mr-1"></i>Vérifié
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <small class="text-muted">{{ review.createdAt|date('d/m/Y H:i') }}</small>
+                            </div>
+                            {% if review.comment %}
+                                <p class="mb-2">{{ review.comment }}</p>
+                            {% endif %}
+                            {% if review.images %}
+                                <div class="row mb-2">
+                                    {% for image in review.images %}
+                                        <div class="col-md-3 col-sm-6 mb-2">
+                                            <img src="{{ asset('uploads/review_images/' ~ image) }}" alt="Review image" class="img-fluid rounded" style="max-height: 120px; object-fit: cover; cursor: pointer;" onclick="openImageModal('{{ asset('uploads/review_images/' ~ image) }}')">
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="d-flex justify-content-between align-items-center">
+                                <form method="post" action="{{ path('app_review_helpful', {'id': review.id}) }}" class="d-inline">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('helpful' ~ review.id) }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-thumbs-up mr-1"></i>Utile ({{ review.helpful }})
+                                    </button>
+                                </form>
+                                {% if review.user == app.user %}
+                                    <div>
+                                        <a href="{{ path('app_review_edit', {'id': review.id}) }}" class="btn btn-sm btn-outline-primary mr-1">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form method="post" action="{{ path('app_review_delete', {'id': review.id}) }}" class="d-inline" onsubmit="return confirm('Supprimer votre avis ?')">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ review.id) }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Actions -->
     <div class="row">
@@ -348,15 +871,18 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="d-flex flex-column">
+                                {% if is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') %}
                                 <a href="{{ path('app_livre_edit', {'id': livre.id}) }}" class="btn btn-warning btn-lg mb-2">
                                     <i class="fas fa-edit mr-2"></i>Modifier ce livre
                                 </a>
+                                {% endif %}
                                 <a href="{{ path('app_livre_index') }}" class="btn btn-secondary btn-lg">
                                     <i class="fas fa-list mr-2"></i>Retour à la liste
                                 </a>
                             </div>
                         </div>
                         <div class="col-md-6">
+                            {% if is_granted('ROLE_ADMIN') %}
                             <div class="alert alert-danger">
                                 <h6 class="font-weight-bold mb-2">
                                     <i class="fas fa-exclamation-triangle mr-1"></i>Zone de danger
@@ -364,10 +890,35 @@
                                 <p class="mb-2">La suppression de ce livre est irréversible et supprimera également toutes les données associées.</p>
                                 {{ include('livre/_delete_form.html.twig') }}
                             </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Image Modal -->
+    <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-body p-0">
+                    <img id="modalImage" src="" alt="Review image" class="img-fluid w-100">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+function openImageModal(imageSrc) {
+    document.getElementById('modalImage').src = imageSrc;
+    $('#imageModal').modal('show');
+}
+</script>
 {% endblock %}

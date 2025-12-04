@@ -1,0 +1,40 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block title %}Mise à jour position réservation{% endblock %}
+
+{% block content %}
+<h2>📊 Mise à jour de votre réservation</h2>
+
+<p>Bonjour {{ user.username ?? user.email }},</p>
+
+<p>La position de votre réservation a changé.</p>
+
+<div style="background: #e1f5fe; padding: 15px; margin: 20px 0; border-radius: 5px;">
+    <h3 style="margin-top: 0;">{{ book.titre }}</h3>
+    <p>
+        <strong>Nouvelle position :</strong> <span style="color: #0277bd; font-weight: bold;">#{{ position }}</span><br>
+        <strong>Auteur :</strong> {{ book.auteur ? book.auteur.prenom ~ ' ' ~ book.auteur.nom : 'Non spécifié' }}
+    </p>
+</div>
+
+{% if position == 1 %}
+<div style="background: #e8f5e9; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #4caf50;">
+    <h4 style="margin-top: 0; color: #2e7d32;">🎉 Vous êtes en tête de liste !</h4>
+    <p>Vous serez le prochain à recevoir ce livre une fois qu'il sera retourné !</p>
+</div>
+{% else %}
+<p>Il y a actuellement <strong>{{ position - 1 }} personne(s)</strong> avant vous dans la file d'attente.</p>
+{% endif %}
+
+<h4>💡 Que faire ?</h4>
+<ul>
+    <li>Vérifier régulièrement votre email pour les notifications</li>
+    <li>Préparez-vous à retirer le livre si vous êtes en tête de liste</li>
+    <li>Consultez votre profil pour plus de détails</li>
+</ul>
+
+<p>Nous vous notifierons dès que votre tour arrivera !</p>
+
+<p>Cordialement,<br>
+L'équipe BiblioApp</p>
+{% endblock %}

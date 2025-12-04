@@ -5,6 +5,9 @@ namespace App\Controller;
 use App\Entity\Livre;
 use App\Form\LivreType;
 use App\Repository\LivreRepository;
+use App\Repository\CategorieRepository;
+use App\Repository\AuteurRepository;
+use App\Repository\EditeurRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -18,35 +21,109 @@ use Knp\Component\Pager\PaginatorInterface;
 final class LivreController extends AbstractController
 {
     #[Route(name: 'app_livre_index', methods: ['GET'])]
-    public function index(Request $request, LivreRepository $livreRepository, PaginatorInterface $paginator): Response
+    public function index(Request $request, LivreRepository $livreRepository, CategorieRepository $categorieRepository, AuteurRepository $auteurRepository, EditeurRepository $editeurRepository, PaginatorInterface $paginator): Response
     {
         $search = $request->query->get('search', '');
+        $categorieId = $request->query->get('categorie', '');
+        $auteurId = $request->query->get('auteur', '');
+        $editeurId = $request->query->get('editeur', '');
+        $ratingFilter = $request->query->get('rating_filter', '');
+        $prixMin = $request->query->get('prix_min', '');
+        $prixMax = $request->query->get('prix_max', '');
+        $sort = $request->query->get('sort', 'l.createdAt DESC');
 
         $queryBuilder = $livreRepository->createQueryBuilder('l')
             ->leftJoin('l.auteur', 'a')
             ->leftJoin('l.categorie', 'c')
             ->leftJoin('l.editeur', 'e')
-            ->addSelect('a', 'c', 'e');
+            ->leftJoin('l.reviews', 'r')
+            ->addSelect('a', 'c', 'e')
+            ->addSelect('AVG(r.rating) as HIDDEN avg_rating')
+            ->groupBy('l.id, a.id, c.id, e.id');
 
+        // Search filter
         if (!empty($search)) {
-            $queryBuilder->where('l.titre LIKE :search')
-                ->orWhere('l.isbn LIKE :search')
-                ->orWhere('a.prenom LIKE :search')
-                ->orWhere('a.nom LIKE :search')
-                ->orWhere('c.designation LIKE :search')
-                ->orWhere('e.nomEditeur LIKE :search')
+            $queryBuilder->andWhere('l.titre LIKE :search OR l.isbn LIKE :search OR CONCAT(a.prenom, \' \', a.nom) LIKE :search OR c.designation LIKE :search OR e.nomEditeur LIKE :search')
                 ->setParameter('search', '%' . $search . '%');
+        }
+
+        // Category filter
+        if (!empty($categorieId)) {
+            $queryBuilder->andWhere('c.id = :categorieId')
+                ->setParameter('categorieId', $categorieId);
+        }
+
+        // Author filter
+        if (!empty($auteurId)) {
+            $queryBuilder->andWhere('a.id = :auteurId')
+                ->setParameter('auteurId', $auteurId);
+        }
+
+        // Publisher filter
+        if (!empty($editeurId)) {
+            $queryBuilder->andWhere('e.id = :editeurId')
+                ->setParameter('editeurId', $editeurId);
+        }
+
+        // Rating filter
+        if (!empty($ratingFilter)) {
+            $queryBuilder->andHaving('AVG(r.rating) >= :ratingFilter')
+                ->setParameter('ratingFilter', $ratingFilter);
+        }
+
+        // Price filters
+        if (!empty($prixMin)) {
+            $queryBuilder->andWhere('l.prix >= :prixMin')
+                ->setParameter('prixMin', $prixMin);
+        }
+
+        if (!empty($prixMax)) {
+            $queryBuilder->andWhere('l.prix <= :prixMax')
+                ->setParameter('prixMax', $prixMax);
+        }
+
+        // Sorting
+        switch ($sort) {
+            case 'l.titre':
+                $queryBuilder->orderBy('l.titre', 'ASC');
+                break;
+            case 'l.titre DESC':
+                $queryBuilder->orderBy('l.titre', 'DESC');
+                break;
+            case 'l.prix':
+                $queryBuilder->orderBy('l.prix', 'ASC');
+                break;
+            case 'l.prix DESC':
+                $queryBuilder->orderBy('l.prix', 'DESC');
+                break;
+            case 'l.createdAt DESC':
+                $queryBuilder->orderBy('l.createdAt', 'DESC');
+                break;
+            case 'l.createdAt':
+                $queryBuilder->orderBy('l.createdAt', 'ASC');
+                break;
+            case 'l.nbExemplaires DESC':
+                $queryBuilder->orderBy('l.nbExemplaires', 'DESC');
+                break;
+            case 'l.nbExemplaires':
+                $queryBuilder->orderBy('l.nbExemplaires', 'ASC');
+                break;
+            default:
+                $queryBuilder->orderBy('l.createdAt', 'DESC');
         }
 
         $pagination = $paginator->paginate(
             $queryBuilder,
             $request->query->getInt('page', 1),
-            10 // items per page
+            12 // items per page
         );
 
         return $this->render('livre/index.html.twig', [
             'livres' => $pagination,
             'search' => $search,
+            'categories' => $categorieRepository->findAll(),
+            'auteurs' => $auteurRepository->findAll(),
+            'editeurs' => $editeurRepository->findAll(),
         ]);
     }
 

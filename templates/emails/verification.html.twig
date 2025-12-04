@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Verify Your Email - BiblioApp</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #007bff; color: white; padding: 20px; text-align: center; }
+        .content { padding: 30px; background: #f8f9fa; }
+        .button { display: inline-block; padding: 12px 24px; background: #28a745; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 BiblioApp</h1>
+            <h2>Verify Your Email Address</h2>
+        </div>
+
+        <div class="content">
+            <h3>Hello {{ user.username ?: user.email }}!</h3>
+
+            <p>Welcome to BiblioApp! To start exploring our collection of books and tracking your reading progress, please verify your email address.</p>
+
+            <p>Click the button below to verify your email:</p>
+
+            <a href="{{ verificationUrl }}" class="button">Verify Email Address</a>
+
+            <p>If the button doesn't work, you can also copy and paste this link into your browser:</p>
+            <p><a href="{{ verificationUrl }}">{{ verificationUrl }}</a></p>
+
+            <p>This link will expire in 24 hours for security reasons.</p>
+
+            <p>If you didn't create an account with BiblioApp, please ignore this email.</p>
+        </div>
+
+        <div class="footer">
+            <p>© 2024 BiblioApp. All rights reserved.</p>
+            <p>If you have any questions, contact us at support@biblioapp.tn</p>
+        </div>
+    </div>
+</body>
+</html>

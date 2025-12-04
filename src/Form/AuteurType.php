@@ -4,8 +4,10 @@ namespace App\Form;
 
 use App\Entity\Auteur;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\File;
 
 class AuteurType extends AbstractType
 {
@@ -15,6 +17,22 @@ class AuteurType extends AbstractType
             ->add('prenom')
             ->add('nom')
             ->add('biographie')
+            ->add('image', FileType::class, [
+                'label' => 'Photo de l\'auteur',
+                'mapped' => false,
+                'required' => false,
+                'constraints' => [
+                    new File([
+                        'maxSize' => '1024k',
+                        'mimeTypes' => [
+                            'image/jpeg',
+                            'image/png',
+                            'image/gif',
+                        ],
+                        'mimeTypesMessage' => 'Veuillez uploader une image valide (JPEG, PNG, GIF)',
+                    ])
+                ],
+            ])
         ;
     }
 

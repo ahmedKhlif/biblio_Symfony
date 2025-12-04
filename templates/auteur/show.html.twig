@@ -15,9 +15,11 @@
             <a href="{{ path('app_auteur_index') }}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm mr-2">
                 <i class="fas fa-arrow-left fa-sm text-white-50"></i> Retour à la liste
             </a>
+            {% if is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') %}
             <a href="{{ path('app_auteur_edit', {'id': auteur.id}) }}" class="d-none d-sm-inline-block btn btn-sm btn-warning shadow-sm">
                 <i class="fas fa-edit fa-sm text-white-50"></i> Modifier
             </a>
+            {% endif %}
         </div>
     </div>
 
@@ -53,6 +55,30 @@
                                 <h4 class="font-weight-bold mb-0">{{ auteur.livres|length }}</h4>
                                 <small class="opacity-75">Publications</small>
                             </div>
+                            {% if is_granted('ROLE_USER') %}
+                                {% set isFavorite = false %}
+                                {% for favAuteur in app.user.favoriteAuthors %}
+                                    {% if favAuteur.id == auteur.id %}
+                                        {% set isFavorite = true %}
+                                    {% endif %}
+                                {% endfor %}
+
+                                {% if isFavorite %}
+                                    <form action="{{ path('app_user_favorites_remove', {'id': auteur.id}) }}" method="post" class="d-inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('remove-favorite-' ~ auteur.id) }}">
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Remove from favorites">
+                                            <i class="fas fa-heart-broken"></i>
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <form action="{{ path('app_user_favorites_add', {'id': auteur.id}) }}" method="post" class="d-inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('add-favorite-' ~ auteur.id) }}">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" title="Add to favorites">
+                                            <i class="fas fa-heart"></i>
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            {% endif %}
                             <i class="fas fa-book-open fa-3x opacity-25"></i>
                         </div>
                     </div>
@@ -104,6 +130,7 @@
             </div>
         </div>
 
+        {% if is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') %}
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card border-left-info shadow h-100 py-2">
                 <div class="card-body">
@@ -138,6 +165,7 @@
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
 
     <!-- Author Information -->
@@ -214,6 +242,69 @@
         </div>
     </div>
 
+    <!-- Audit Information - Admin Only -->
+    {% if is_granted('ROLE_ADMIN') %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow border-left-danger">
+                <div class="card-header py-3 bg-gradient-danger">
+                    <h6 class="m-0 font-weight-bold text-white">
+                        <i class="fas fa-shield-alt mr-2"></i>Informations d'Audit (Administrateur)
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="font-weight-bold text-muted" width="40%">Créé le:</td>
+                                    <td>
+                                        <i class="fas fa-calendar-plus text-success mr-1"></i>
+                                        {{ auteur.createdAtFormatted }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold text-muted">Créé par:</td>
+                                    <td>
+                                        <i class="fas fa-user-plus text-success mr-1"></i>
+                                        {% if auteur.createdBy %}
+                                            {{ auteur.createdBy.username ?: auteur.createdBy.email }}
+                                        {% else %}
+                                            <span class="text-muted">Système</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="font-weight-bold text-muted" width="40%">Modifié le:</td>
+                                    <td>
+                                        <i class="fas fa-calendar-check text-warning mr-1"></i>
+                                        {{ auteur.updatedAtFormatted }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-weight-bold text-muted">Modifié par:</td>
+                                    <td>
+                                        <i class="fas fa-user-edit text-warning mr-1"></i>
+                                        {% if auteur.updatedBy %}
+                                            {{ auteur.updatedBy.username ?: auteur.updatedBy.email }}
+                                        {% else %}
+                                            <span class="text-muted">Système</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Livres de l'Auteur -->
     {% if auteur.livres|length > 0 %}
     <div class="card shadow mb-4">
@@ -264,6 +355,7 @@
                                 </small>
                             </div>
 
+                            {% if is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') %}
                             <div class="row text-center mb-3">
                                 <div class="col-6">
                                     <small class="text-muted d-block">Prix</small>
@@ -278,6 +370,7 @@
                                     {% endif %}
                                 </div>
                             </div>
+                            {% endif %}
 
                             <div class="text-center">
                                 <a href="{{ path('app_livre_show', {'id': livre.id}) }}" class="btn btn-primary btn-sm btn-block">
@@ -302,14 +395,17 @@
             <i class="fas fa-book-open fa-4x text-gray-300 mb-3"></i>
             <h5 class="text-muted">Aucun livre publié</h5>
             <p class="text-muted">Cet auteur n'a pas encore de livres dans notre bibliothèque.</p>
+            {% if is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') %}
             <a href="{{ path('app_livre_new') }}" class="btn btn-primary">
                 <i class="fas fa-plus mr-2"></i>Ajouter un livre
             </a>
+            {% endif %}
         </div>
     </div>
     {% endif %}
 
     <!-- Delete Card -->
+    {% if is_granted('ROLE_ADMIN') %}
     <div class="card shadow mb-4">
         <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-danger">Actions</h6>
@@ -318,6 +414,7 @@
             {{ include('auteur/_delete_form.html.twig') }}
         </div>
     </div>
+    {% endif %}
 
     <script>
         // Author Statistics Chart

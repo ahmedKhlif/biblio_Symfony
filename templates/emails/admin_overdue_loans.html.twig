@@ -1,0 +1,57 @@
+{% extends 'emails/base.html.twig' %}
+
+{% block title %}Alertes de retards d'emprunts{% endblock %}
+
+{% block content %}
+<h2>🚨 Emprunts en retard - Alerte administrative</h2>
+
+<p>Bonjour,</p>
+
+<p>Nous avons détecté {{ overdueLoans|length }} emprunt(s) en retard qui nécessitent votre attention.</p>
+
+<div style="background: #ffebee; padding: 15px; margin: 20px 0; border-radius: 5px; border-left: 4px solid #c62828;">
+    <h3 style="margin-top: 0; color: #c62828;">📊 Résumé des retards :</h3>
+    <p><strong>Nombre total d'emprunts en retard :</strong> {{ overdueLoans|length }}</p>
+</div>
+
+<h4>Détails des emprunts :</h4>
+<table style="width: 100%; border-collapse: collapse;">
+    <thead>
+        <tr style="background: #f5f5f5;">
+            <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Utilisateur</th>
+            <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Livre</th>
+            <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Date limite</th>
+            <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">Jours en retard</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for loan in overdueLoans %}
+        <tr>
+            <td style="padding: 10px; border: 1px solid #ddd;">{{ loan.user.username ?? loan.user.email }}</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">{{ loan.livre.titre }}</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">{{ loan.dueDate|date('d/m/Y') }}</td>
+            <td style="padding: 10px; border: 1px solid #ddd; color: #d32f2f; font-weight: bold;">
+                {{ (now.timestamp - loan.dueDate.timestamp) // 86400 }} jour(s)
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h4>Actions recommandées :</h4>
+<ul>
+    <li>Contacter les utilisateurs pour relancer les retours</li>
+    <li>Appliquer les frais de retard si nécessaire</li>
+    <li>Vérifier l'état des livres</li>
+    <li>Signaler les utilisateurs récidivistes</li>
+</ul>
+
+<p>
+    <a href="{{ app.request.host }}/admin/loan" style="display: inline-block; background: #2196f3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 10px;">
+        Voir tous les emprunts
+    </a>
+</p>
+
+<p>Cordialement,<br>
+Système BiblioApp</p>
+{% endblock %}

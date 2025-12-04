@@ -24,6 +24,18 @@ class Categorie
     #[ORM\OneToMany(targetEntity: Livre::class, mappedBy: 'categorie')]
     private Collection $livres;
 
+    #[ORM\Column]
+    private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    private ?User $createdBy = null;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    private ?User $updatedBy = null;
+
     public function __construct()
     {
         $this->livres = new ArrayCollection();
@@ -35,6 +47,11 @@ class Categorie
     }
 
     public function getDesignation(): ?string
+    {
+        return $this->designation;
+    }
+
+    public function __toString(): string
     {
         return $this->designation;
     }
@@ -86,5 +103,75 @@ class Categorie
         }
 
         return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getCreatedBy(): ?User
+    {
+        return $this->createdBy;
+    }
+
+    public function setCreatedBy(?User $createdBy): static
+    {
+        $this->createdBy = $createdBy;
+
+        return $this;
+    }
+
+    public function getUpdatedBy(): ?User
+    {
+        return $this->updatedBy;
+    }
+
+    public function setUpdatedBy(?User $updatedBy): static
+    {
+        $this->updatedBy = $updatedBy;
+
+        return $this;
+    }
+
+    public function getCreatedAtFormatted(): string
+    {
+        return $this->createdAt ? $this->createdAt->format('d/m/Y H:i:s') : '';
+    }
+
+    public function getUpdatedAtFormatted(): string
+    {
+        return $this->updatedAt ? $this->updatedAt->format('d/m/Y H:i:s') : '';
+    }
+
+    #[ORM\PrePersist]
+    public function setCreatedAtValue(): void
+    {
+        $this->createdAt = new \DateTimeImmutable();
+    }
+
+    #[ORM\PreUpdate]
+    public function setUpdatedAtValue(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
     }
 }

@@ -20,7 +20,8 @@ final class Version20251109104223 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE livre ADD image VARCHAR(255) DEFAULT NULL');
+        // Column already exists, skip migration
+        // $this->addSql('ALTER TABLE livre ADD image VARCHAR(255) DEFAULT NULL');
     }
 
     public function down(Schema $schema): void

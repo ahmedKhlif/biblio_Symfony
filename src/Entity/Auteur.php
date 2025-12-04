@@ -25,8 +25,23 @@ class Auteur
     #[ORM\Column(type: Types::TEXT)]
     private ?string $biographie = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $image = null;
+
     #[ORM\OneToMany(targetEntity: Livre::class, mappedBy: 'auteur')]
     private Collection $livres;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    private ?User $createdBy = null;
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    private ?User $updatedBy = null;
 
     public function __construct()
     {
@@ -55,6 +70,11 @@ class Auteur
         return $this->nom;
     }
 
+    public function __toString(): string
+    {
+        return $this->prenom . ' ' . $this->nom;
+    }
+
     public function setNom(string $nom): static
     {
         $this->nom = $nom;
@@ -70,6 +90,18 @@ class Auteur
     public function setBiographie(string $biographie): static
     {
         $this->biographie = $biographie;
+
+        return $this;
+    }
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): static
+    {
+        $this->image = $image;
 
         return $this;
     }
@@ -102,5 +134,75 @@ class Auteur
         }
 
         return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getCreatedBy(): ?User
+    {
+        return $this->createdBy;
+    }
+
+    public function setCreatedBy(?User $createdBy): static
+    {
+        $this->createdBy = $createdBy;
+
+        return $this;
+    }
+
+    public function getUpdatedBy(): ?User
+    {
+        return $this->updatedBy;
+    }
+
+    public function setUpdatedBy(?User $updatedBy): static
+    {
+        $this->updatedBy = $updatedBy;
+
+        return $this;
+    }
+
+    public function getCreatedAtFormatted(): string
+    {
+        return $this->createdAt ? $this->createdAt->format('d/m/Y H:i:s') : '';
+    }
+
+    public function getUpdatedAtFormatted(): string
+    {
+        return $this->updatedAt ? $this->updatedAt->format('d/m/Y H:i:s') : '';
+    }
+
+    #[ORM\PrePersist]
+    public function setCreatedAtValue(): void
+    {
+        $this->createdAt = new \DateTimeImmutable();
+    }
+
+    #[ORM\PreUpdate]
+    public function setUpdatedAtValue(): void
+    {
+        $this->updatedAt = new \DateTimeImmutable();
     }
 }

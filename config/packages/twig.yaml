@@ -1,5 +1,12 @@
 twig:
     file_name_pattern: '*.twig'
+    globals:
+        banner_repository: '@App\Repository\BannerRepository'
+
+when@dev:
+    twig:
+        debug: true
+        strict_variables: true
 
 when@test:
     twig:

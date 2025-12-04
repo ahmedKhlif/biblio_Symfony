@@ -8,6 +8,7 @@ use App\Entity\Editeur;
 use App\Entity\Livre;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -24,6 +25,16 @@ class LivreType extends AbstractType
             ->add('nbExemplaires')
             ->add('prix')
             ->add('isbn')
+            ->add('isBorrowable', CheckboxType::class, [
+                'label' => 'Disponible pour emprunt',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-check-input',
+                ],
+                'label_attr' => [
+                    'class' => 'form-check-label',
+                ],
+            ])
             ->add('image', FileType::class, [
                 'label' => 'Image du livre',
                 'mapped' => false,

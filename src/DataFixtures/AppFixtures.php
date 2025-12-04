@@ -6,11 +6,23 @@ use App\Entity\Auteur;
 use App\Entity\Categorie;
 use App\Entity\Editeur;
 use App\Entity\Livre;
+use App\Entity\ReadingGoal;
+use App\Entity\ReadingProgress;
+use App\Entity\Review;
+use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AppFixtures extends Fixture
 {
+    private UserPasswordHasherInterface $passwordHasher;
+
+    public function __construct(UserPasswordHasherInterface $passwordHasher)
+    {
+        $this->passwordHasher = $passwordHasher;
+    }
+
     public function load(ObjectManager $manager): void
     {
         // Créer des auteurs réels
@@ -33,6 +45,8 @@ class AppFixtures extends Fixture
             $auteur->setPrenom($data['prenom']);
             $auteur->setNom($data['nom']);
             $auteur->setBiographie($data['biographie']);
+            $auteur->setCreatedAt(new \DateTimeImmutable());
+            $auteur->setUpdatedAt(new \DateTimeImmutable());
             $manager->persist($auteur);
             $auteurs[] = $auteur;
         }
@@ -54,6 +68,8 @@ class AppFixtures extends Fixture
             $categorie = new Categorie();
             $categorie->setDesignation($data['designation']);
             $categorie->setDescription($data['description']);
+            $categorie->setCreatedAt(new \DateTimeImmutable());
+            $categorie->setUpdatedAt(new \DateTimeImmutable());
             $manager->persist($categorie);
             $categories[] = $categorie;
         }
@@ -75,6 +91,8 @@ class AppFixtures extends Fixture
             $editeur->setPays($data['pays']);
             $editeur->setAdresse($data['adresse']);
             $editeur->setTelephone($data['telephone']);
+            $editeur->setCreatedAt(new \DateTimeImmutable());
+            $editeur->setUpdatedAt(new \DateTimeImmutable());
             $manager->persist($editeur);
             $editeurs[] = $editeur;
         }
@@ -215,6 +233,7 @@ class AppFixtures extends Fixture
             ],
         ];
 
+        $livres = [];
         foreach ($livresData as $data) {
             $livre = new Livre();
             $livre->setTitre($data['titre']);
@@ -226,8 +245,110 @@ class AppFixtures extends Fixture
             $livre->setAuteur($auteurs[$data['auteur']]);
             $livre->setCategorie($categories[$data['categorie']]);
             $livre->setEditeur($editeurs[$data['editeur']]);
+            $livre->setCreatedAt(new \DateTimeImmutable());
+            $livre->setUpdatedAt(new \DateTimeImmutable());
             $manager->persist($livre);
+            $livres[] = $livre;
         }
+
+        // Create users
+        $usersData = [
+            [
+                'email' => 'admin@example.com',
+                'username' => 'admin',
+                'roles' => ['ROLE_ADMIN'],
+                'password' => 'admin123',
+                'isActive' => true,
+            ],
+            [
+                'email' => 'moderator@example.com',
+                'username' => 'moderator',
+                'roles' => ['ROLE_MODERATOR'],
+                'password' => 'mod123',
+                'isActive' => true,
+            ],
+            [
+                'email' => 'user@example.com',
+                'username' => 'user',
+                'roles' => ['ROLE_USER'],
+                'password' => 'user123',
+                'isActive' => true,
+            ],
+        ];
+
+        $users = [];
+        foreach ($usersData as $data) {
+            $user = new User();
+            $user->setEmail($data['email']);
+            $user->setUsername($data['username']);
+            $user->setRoles($data['roles']);
+            $user->setIsActive($data['isActive']);
+            $user->setCreatedAt(new \DateTimeImmutable());
+            $user->setUpdatedAt(new \DateTimeImmutable());
+
+            $hashedPassword = $this->passwordHasher->hashPassword($user, $data['password']);
+            $user->setPassword($hashedPassword);
+
+            $manager->persist($user);
+            $users[] = $user;
+        }
+
+        // Create sample user data for the regular user
+        $regularUser = $users[2]; // user@example.com
+
+        // Add some books to owned books
+        $regularUser->addOwnedBook($livres[0]); // Les Misérables
+        $regularUser->addOwnedBook($livres[1]); // L'Étranger
+
+        // Add some books to wishlist
+        $regularUser->addToWishlist($livres[2]); // Le Deuxième Sexe
+        $regularUser->addToWishlist($livres[3]); // À la recherche du temps perdu
+
+        // Add favorite authors
+        $regularUser->addFavoriteAuthor($auteurs[0]); // Victor Hugo
+        $regularUser->addFavoriteAuthor($auteurs[1]); // Albert Camus
+
+        // Create reading progress
+        $progress1 = new ReadingProgress();
+        $progress1->setUser($regularUser);
+        $progress1->setLivre($livres[0]);
+        $progress1->setProgressPercentage(75);
+        $progress1->setLastReadAt(new \DateTime('-2 days'));
+        $manager->persist($progress1);
+
+        $progress2 = new ReadingProgress();
+        $progress2->setUser($regularUser);
+        $progress2->setLivre($livres[1]);
+        $progress2->setProgressPercentage(100);
+        $progress2->setLastReadAt(new \DateTime('-1 day'));
+        $manager->persist($progress2);
+
+        // Create reading goals
+        $goal1 = new ReadingGoal();
+        $goal1->setUser($regularUser);
+        $goal1->setGoalType('books_year');
+        $goal1->setTargetValue(20);
+        $goal1->setCurrentValue(12);
+        $goal1->setStartDate(new \DateTime('2025-01-01'));
+        $goal1->setEndDate(new \DateTime('2025-12-31'));
+        $manager->persist($goal1);
+
+        $goal2 = new ReadingGoal();
+        $goal2->setUser($regularUser);
+        $goal2->setGoalType('pages_month');
+        $goal2->setTargetValue(1000);
+        $goal2->setCurrentValue(800);
+        $goal2->setStartDate(new \DateTime('2025-11-01'));
+        $goal2->setEndDate(new \DateTime('2025-11-30'));
+        $manager->persist($goal2);
+
+        // Create a review
+        $review = new Review();
+        $review->setUser($regularUser);
+        $review->setLivre($livres[1]);
+        $review->setRating(5);
+        $review->setComment('An excellent existentialist novel that explores the absurdity of life.');
+        $manager->persist($review);
 
         $manager->flush();
     }

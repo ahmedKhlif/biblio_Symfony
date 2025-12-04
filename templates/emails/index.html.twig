@@ -1,0 +1,291 @@
+{% extends 'backendofficebase.html.twig' %}
+
+{% block title %}Gestion des Emails - BiblioApp{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-envelope"></i> Email Management
+        </h1>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Users
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ totalUsers }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Verified Users
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ verifiedUsers }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Administrators
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ adminCount }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-shield fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Unverified Users
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ totalUsers - verifiedUsers }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Test Email Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <h5 class="mb-3 text-gray-800">
+                <i class="fas fa-flask"></i> Test Emails for Features
+            </h5>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow border-left-primary h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-book-reader fa-2x text-primary"></i>
+                        <div class="ml-3">
+                            <h6 class="mb-0">Loan Emails</h6>
+                            <small class="text-muted">{{ totalLoans }} emprunt(s)</small>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-3">Test loan approval, rejection, and overdue emails</p>
+                    <a href="{{ path('backoffice_emails_loans') }}" class="btn btn-primary btn-sm btn-block">
+                        <i class="fas fa-envelope"></i> Test Loans
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow border-left-success h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-shopping-cart fa-2x text-success"></i>
+                        <div class="ml-3">
+                            <h6 class="mb-0">Order Emails</h6>
+                            <small class="text-muted">{{ totalOrders }} commande(s)</small>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-3">Test shipping and delivery confirmation emails</p>
+                    <a href="{{ path('backoffice_emails_orders') }}" class="btn btn-success btn-sm btn-block">
+                        <i class="fas fa-envelope"></i> Test Orders
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow border-left-info h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="fas fa-calendar fa-2x text-info"></i>
+                        <div class="ml-3">
+                            <h6 class="mb-0">Reservation Emails</h6>
+                            <small class="text-muted">{{ totalReservations }} réservation(s)</small>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-3">Test availability, position, and cancellation emails</p>
+                    <a href="{{ path('backoffice_emails_reservations') }}" class="btn btn-info btn-sm btn-block">
+                        <i class="fas fa-envelope"></i> Test Reservations
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Email Actions -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-paper-plane"></i> Bulk Email Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-chart-line fa-3x text-info mb-3"></i>
+                                    <h5>Weekly Summaries</h5>
+                                    <p class="text-muted small">Send reading summaries to all verified users</p>
+                                    <form method="post" action="{{ path('backoffice_send_weekly_summaries') }}" class="d-inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('backoffice_send_weekly_summaries') }}">
+                                        <button type="submit" class="btn btn-info btn-sm">
+                                            <i class="fas fa-paper-plane"></i> Envoyer Maintenant
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-lightbulb fa-3x text-warning mb-3"></i>
+                                    <h5>Recommandations de Livres</h5>
+                                    <p class="text-muted small">Envoyer des recommandations personnalisées</p>
+                                    <form method="post" action="{{ path('backoffice_send_recommendations') }}" class="d-inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('backoffice_send_recommendations') }}">
+                                        <button type="submit" class="btn btn-warning btn-sm">
+                                            <i class="fas fa-paper-plane"></i> Envoyer Maintenant
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                                    <h5>Alerte Stock Faible</h5>
+                                    <p class="text-muted small">Alerter les admins des livres en rupture</p>
+                                    <form method="post" action="{{ path('backoffice_send_low_stock_alert') }}" class="d-inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('backoffice_send_low_stock_alert') }}">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-paper-plane"></i> Envoyer Alerte
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-users fa-3x text-success mb-3"></i>
+                                    <h5>Gérer les Utilisateurs</h5>
+                                    <p class="text-muted small">Envoyer des emails aux utilisateurs individuels</p>
+                                    <a href="{{ path('backoffice_emails_users') }}" class="btn btn-success btn-sm">
+                                        <i class="fas fa-users"></i> Voir Utilisateurs
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-info-circle"></i> Email System Info
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Sender Email:</strong><br>
+                        <small class="text-muted">khlifahmed9@gmail.com</small>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Email Templates:</strong><br>
+                        <small class="text-muted">8 professional templates available</small>
+                    </div>
+                    <div class="mb-3">
+                        <strong>SMTP Status:</strong><br>
+                        <span class="badge badge-success">Active</span>
+                    </div>
+                    <div class="mb-0">
+                        <strong>Last Activity:</strong><br>
+                        <small class="text-muted">{{ 'now'|date('Y-m-d H:i:s') }}</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-clock"></i> Automated Emails
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <small> User registration verification</small>
+                    </div>
+                    <div class="mb-2">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <small> Welcome emails after verification</small>
+                    </div>
+                    <div class="mb-2">
+                        <i class="fas fa-clock text-warning"></i>
+                        <small> Weekly reading summaries (manual)</small>
+                    </div>
+                    <div class="mb-2">
+                        <i class="fas fa-clock text-warning"></i>
+                        <small> Book recommendations (manual)</small>
+                    </div>
+                    <div class="mb-2">
+                        <i class="fas fa-clock text-warning"></i>
+                        <small> Reading goal achievements (manual)</small>
+                    </div>
+                    <div class="mb-0">
+                        <i class="fas fa-clock text-warning"></i>
+                        <small> Low stock alerts (manual)</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
