@@ -83,11 +83,12 @@
                                     <td><small>{{ reservation.livre.isbn ?? 'N/A' }}</small></td>
                                 </tr>
                                 <tr>
-                                    <th class="text-gray-800">Exemplaires</th>
+                                    <th class="text-gray-800">Stock Emprunt</th>
                                     <td>
-                                        <span class="badge badge-{% if reservation.livre.nbExemplaires > 0 %}success{% else %}danger{% endif %}">
-                                            {{ reservation.livre.nbExemplaires }}
+                                        <span class="badge badge-{% if reservation.livre.stockEmprunt > 0 %}success{% else %}danger{% endif %}">
+                                            {{ reservation.livre.stockEmprunt }}
                                         </span>
+                                        <small class="text-muted ml-1">(Vente: {{ reservation.livre.stockVente }})</small>
                                     </td>
                                 </tr>
                             </table>
@@ -143,10 +144,10 @@
                 <div class="alert alert-success shadow-sm">
                     <i class="fas fa-info-circle mr-2"></i>
                     <strong>Cette réservation est en première position!</strong>
-                    {% if reservation.livre.nbExemplaires > 0 %}
+                    {% if reservation.livre.stockEmprunt > 0 %}
                         Le livre est disponible et peut être converti en emprunt.
                     {% else %}
-                        Aucun exemplaire disponible pour le moment.
+                        Aucun exemplaire disponible pour l'emprunt pour le moment.
                     {% endif %}
                 </div>
             {% endif %}
@@ -181,7 +182,7 @@
                             </form>
                         {% endif %}
 
-                        {% if reservation.position == 0 and reservation.livre.nbExemplaires > 0 %}
+                        {% if reservation.position == 0 and reservation.livre.stockEmprunt > 0 %}
                             <form method="POST" action="{{ path('app_admin_reservation_create_loan', {'id': reservation.id}) }}" class="mb-2">
                                 <input type="hidden" name="_token" value="{{ csrf_token('create_loan' ~ reservation.id) }}">
                                 <button type="submit" class="btn btn-success btn-block">
@@ -189,10 +190,10 @@
                                 </button>
                             </form>
                         {% elseif reservation.position == 0 %}
-                            <button class="btn btn-outline-secondary btn-block mb-2" disabled title="Aucun exemplaire disponible">
+                            <button class="btn btn-outline-secondary btn-block mb-2" disabled title="Aucun exemplaire disponible pour emprunt">
                                 <i class="fas fa-exchange-alt"></i> Convertir en Emprunt
                             </button>
-                            <small class="text-danger d-block mb-2 text-center">Aucun exemplaire disponible</small>
+                            <small class="text-danger d-block mb-2 text-center">Aucun exemplaire disponible pour emprunt</small>
                         {% endif %}
 
                         <hr>
@@ -242,10 +243,11 @@
                     <p class="mb-1"><i class="fas fa-barcode text-muted mr-2"></i><small>{{ reservation.livre.isbn ?? 'N/A' }}</small></p>
                     <p class="mb-0">
                         <i class="fas fa-copy text-muted mr-2"></i>
-                        <small>Exemplaires:</small>
-                        <span class="badge badge-{% if reservation.livre.nbExemplaires > 0 %}success{% else %}danger{% endif %}">
-                            {{ reservation.livre.nbExemplaires }}
+                        <small>Stock Emprunt:</small>
+                        <span class="badge badge-{% if reservation.livre.stockEmprunt > 0 %}success{% else %}danger{% endif %}">
+                            {{ reservation.livre.stockEmprunt }}
                         </span>
+                        <small class="text-muted">(Vente: {{ reservation.livre.stockVente }})</small>
                     </p>
                 </div>
             </div>

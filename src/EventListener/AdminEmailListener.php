@@ -6,12 +6,16 @@ use App\Entity\BookReservation;
 use App\Entity\Loan;
 use App\Entity\Order;
 use App\Service\EmailServiceInterface;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
+use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Psr\Log\LoggerInterface;
 
 /**
  * AdminEmailListener - Automatic email notifications for admin actions
  */
+#[AsDoctrineListener(event: Events::postUpdate)]
+#[AsDoctrineListener(event: Events::postPersist)]
 class AdminEmailListener
 {
     public function __construct(
@@ -45,6 +49,12 @@ class AdminEmailListener
 
         try {
             if ($entity instanceof Loan) {
+                // Send confirmation email to the user
+                $this->logger->info('Sending loan request received email to user');
+                $this->emailService->sendLoanRequestReceivedEmail($entity);
+                $this->logger->info('Sent loan request received email to user');
+                
+                // Send notification to admins
                 $this->logger->info('Sending new loan request notification to admins');
                 $this->emailService->sendNewLoanRequestNotificationToAdmins($entity);
                 $this->logger->info('Sent new loan request notification to admins');

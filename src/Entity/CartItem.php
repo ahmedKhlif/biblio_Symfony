@@ -113,18 +113,18 @@ class CartItem
     }
 
     /**
-     * Check if item is available in stock
+     * Check if item is available in stock (using stock for sale)
      */
     public function isAvailable(): bool
     {
-        return $this->livre && $this->livre->getNbExemplaires() >= $this->quantity;
+        return $this->livre && $this->livre->getStockVente() >= $this->quantity;
     }
 
     /**
-     * Get available stock
+     * Get available stock for sale
      */
     public function getAvailableStock(): int
     {
-        return $this->livre ? $this->livre->getNbExemplaires() : 0;
+        return $this->livre ? $this->livre->getStockVente() : 0;
     }
 }

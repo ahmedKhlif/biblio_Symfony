@@ -239,8 +239,11 @@ class CheckoutController extends AbstractController
     {
         foreach ($order->getOrderItems() as $item) {
             $livre = $item->getLivre();
-            $newStock = $livre->getNbExemplaires() - $item->getQuantity();
-            $livre->setNbExemplaires(max(0, $newStock));
+            // Decrement stockVente for sales, not stockEmprunt
+            $newStock = $livre->getStockVente() - $item->getQuantity();
+            $livre->setStockVente(max(0, $newStock));
+            // Also update total nbExemplaires for backwards compatibility
+            $livre->setNbExemplaires($livre->getStockVente() + $livre->getStockEmprunt());
         }
     }
 }

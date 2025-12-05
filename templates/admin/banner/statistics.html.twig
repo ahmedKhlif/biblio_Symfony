@@ -148,9 +148,16 @@
 <!-- Chart.js for visualization -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const ctx = document.getElementById('dismissalChart').getContext('2d');
-        const chart = new Chart(ctx, {
+    function initBannerChart() {
+        const ctx = document.getElementById('dismissalChart');
+        if (!ctx) return;
+        
+        // Destroy existing chart if it exists
+        if (window.bannerChart) {
+            window.bannerChart.destroy();
+        }
+        
+        window.bannerChart = new Chart(ctx.getContext('2d'), {
             type: 'doughnut',
             data: {
                 labels: ['Conservée', 'Fermée'],
@@ -171,6 +178,11 @@
                 }
             }
         });
-    });
+    }
+    
+    // Support both regular page load and Turbo navigation
+    document.addEventListener('DOMContentLoaded', initBannerChart);
+    document.addEventListener('turbo:load', initBannerChart);
+    document.addEventListener('turbo:render', initBannerChart);
 </script>
 {% endblock %}

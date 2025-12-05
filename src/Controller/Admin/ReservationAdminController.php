@@ -53,8 +53,8 @@ class ReservationAdminController extends AbstractController
         }
 
         $livre = $reservation->getLivre();
-        if ($livre->getNbExemplaires() <= 0) {
-            $this->addFlash('error', 'Le livre n\'a plus d\'exemplaires disponibles.');
+        if ($livre->getStockEmprunt() <= 0) {
+            $this->addFlash('error', 'Le livre n\'a plus d\'exemplaires disponibles pour l\'emprunt.');
             return $this->redirectToRoute('admin_bookreservation_index');
         }
 
@@ -66,7 +66,10 @@ class ReservationAdminController extends AbstractController
         $loan->setApprovedBy($this->getUser()?->getFirstName() . ' ' . $this->getUser()?->getLastName());
         $loan->setNotes('Cree a partir de la reservation #' . $reservation->getId());
 
-        $livre->setNbExemplaires($livre->getNbExemplaires() - 1);
+        // Decrement stockEmprunt for loans
+        $livre->setStockEmprunt($livre->getStockEmprunt() - 1);
+        // Update total for backwards compatibility
+        $livre->setNbExemplaires($livre->getStockVente() + $livre->getStockEmprunt());
 
         $reservation->setIsActive(false);
         $reservation->setNotifiedAt(new \DateTimeImmutable());

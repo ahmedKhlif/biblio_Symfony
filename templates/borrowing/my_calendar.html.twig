@@ -234,7 +234,7 @@
             {% if upcomingReturns %}
                 {% for loan in upcomingReturns %}
                     <div class="return-item">
-                        <img src="{{ loan.livre.image ? asset('uploads/livres/' ~ loan.livre.image) : asset('img/undraw_profile.svg') }}"
+                        <img src="{{ loan.livre.image ? asset('uploads/images/' ~ loan.livre.image) : asset('img/undraw_profile.svg') }}"
                              alt="{{ loan.livre.titre }}" class="return-book-image">
                         <div class="return-book-info">
                             <div class="return-book-title">{{ loan.livre.titre }}</div>
@@ -309,96 +309,101 @@
 <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.8/locales/fr.global.min.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Small delay to ensure DOM is fully rendered
-    setTimeout(function() {
-        const calendarEl = document.getElementById('personal-calendar');
-        
-        // Verify element exists
-        if (!calendarEl) {
-            console.error('Calendar element not found');
-            return;
-        }
-        
-        // Parse events safely
-        let events = [];
-        try {
-            const rawEvents = {{ events|raw }};
-            events = Array.isArray(rawEvents) ? rawEvents : [];
-            console.log('Calendar events loaded:', events);
-        } catch (error) {
-            console.error('Error parsing calendar events:', error);
-            events = [];
-        }
+function initPersonalCalendar() {
+    const calendarEl = document.getElementById('personal-calendar');
+    
+    // Verify element exists
+    if (!calendarEl) {
+        console.error('Calendar element not found');
+        return;
+    }
+    
+    // Clear any existing calendar
+    calendarEl.innerHTML = '';
+    
+    // Parse events safely
+    let events = [];
+    try {
+        const rawEvents = {{ events|raw }};
+        events = Array.isArray(rawEvents) ? rawEvents : [];
+        console.log('Calendar events loaded:', events);
+    } catch (error) {
+        console.error('Error parsing calendar events:', error);
+        events = [];
+    }
 
-        // Check if FullCalendar is available (wait with delay if needed)
-        const checkCalendar = setInterval(function() {
-            if (typeof FullCalendar !== 'undefined') {
-                clearInterval(checkCalendar);
-                initializeCalendar();
-            }
-        }, 100);
-
-        // Timeout after 5 seconds
-        setTimeout(function() {
-            clearInterval(checkCalendar);
-            if (typeof FullCalendar === 'undefined') {
-                console.error('FullCalendar library failed to load');
-            }
-        }, 5000);
-
-        function initializeCalendar() {
-            try {
-                const calendar = new FullCalendar.Calendar(calendarEl, {
-                    initialView: 'dayGridMonth',
-                    locale: 'fr',
-                    events: events,
-                    eventDisplay: 'block',
-                    eventTimeFormat: {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        meridiem: false
-                    },
-                    dayMaxEvents: true,
-                    moreLinkClick: 'popover',
-                    headerToolbar: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'dayGridMonth,dayGridWeek'
-                    },
-                    buttonText: {
-                        today: 'Aujourd\'hui',
-                        month: 'Mois',
-                        week: 'Semaine'
-                    },
-                    eventClick: function(info) {
-                        // Open book details in new tab
-                        if (info.event.url) {
-                            window.open(info.event.url, '_blank');
-                        }
-                        info.jsEvent.preventDefault();
-                    },
-                    eventDidMount: function(info) {
-                        // Add tooltip with book title
-                        info.el.setAttribute('title', info.event.title);
-                    },
-                    datesSet: function(info) {
-                        console.log('Calendar rendered for period:', info.start, 'to', info.end);
-                    }
-                });
-
-                calendar.render();
-                console.log('Calendar initialized successfully');
-            } catch (error) {
-                console.error('Error initializing calendar:', error);
-            }
-        }
-
-        // If FullCalendar is already loaded, initialize immediately
+    // Check if FullCalendar is available (wait with delay if needed)
+    const checkCalendar = setInterval(function() {
         if (typeof FullCalendar !== 'undefined') {
-            initializeCalendar();
+            clearInterval(checkCalendar);
+            renderCalendar();
         }
-    }, 100); // Small delay for DOM rendering
-});
+    }, 100);
+
+    // Timeout after 5 seconds
+    setTimeout(function() {
+        clearInterval(checkCalendar);
+        if (typeof FullCalendar === 'undefined') {
+            console.error('FullCalendar library failed to load');
+        }
+    }, 5000);
+
+    function renderCalendar() {
+        try {
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'fr',
+                events: events,
+                eventDisplay: 'block',
+                eventTimeFormat: {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    meridiem: false
+                },
+                dayMaxEvents: true,
+                moreLinkClick: 'popover',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,dayGridWeek'
+                },
+                buttonText: {
+                    today: 'Aujourd\'hui',
+                    month: 'Mois',
+                    week: 'Semaine'
+                },
+                eventClick: function(info) {
+                    // Open book details in new tab
+                    if (info.event.url) {
+                        window.open(info.event.url, '_blank');
+                    }
+                    info.jsEvent.preventDefault();
+                },
+                eventDidMount: function(info) {
+                    // Add tooltip with book title
+                    info.el.setAttribute('title', info.event.title);
+                },
+                datesSet: function(info) {
+                    console.log('Calendar rendered for period:', info.start, 'to', info.end);
+                }
+            });
+
+            calendar.render();
+            console.log('Calendar initialized successfully');
+        } catch (error) {
+            console.error('Error initializing calendar:', error);
+        }
+    }
+
+    // If FullCalendar is already loaded, initialize immediately
+    if (typeof FullCalendar !== 'undefined') {
+        renderCalendar();
+    }
+}
+
+// Support both regular page load and Turbo navigation
+document.addEventListener('DOMContentLoaded', initPersonalCalendar);
+document.addEventListener('turbo:load', initPersonalCalendar);
+document.addEventListener('turbo:render', initPersonalCalendar);
 </script>
 {% endblock %}

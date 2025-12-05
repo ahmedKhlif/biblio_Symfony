@@ -94,7 +94,7 @@
             <div class="book-info">
                 <div class="book-cover">
                     {% if livre.image %}
-                        <img src="{{ asset('uploads/livres/' ~ livre.image) }}" alt="{{ livre.titre }}">
+                        <img src="{{ asset('uploads/images/' ~ livre.image) }}" alt="{{ livre.titre }}">
                     {% else %}
                         <div class="bg-light rounded d-flex align-items-center justify-content-center" style="width: 120px; height: 180px;">
                             <i class="fas fa-book text-muted" style="font-size: 2rem;"></i>
@@ -114,8 +114,8 @@
                         </p>
                     {% endif %}
                     <p>
-                        <strong>Exemplaires disponibles:</strong>
-                        {{ livre.nbExemplaires }}
+                        <strong>Stock emprunt:</strong>
+                        {{ livre.stockEmprunt }}
                     </p>
                     <p>
                         <strong>Emprunts actifs:</strong>
@@ -160,11 +160,23 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block javascripts %}
+{{ parent() }}
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
+<script data-turbo-eval="false">
+    function initReservationCalendar() {
         var calendarEl = document.getElementById('calendar');
+        if (!calendarEl) return;
+        
+        // Prevent double initialization
+        if (calendarEl.dataset.initialized === 'true') return;
+        calendarEl.dataset.initialized = 'true';
+        
+        // Clear any existing calendar
+        calendarEl.innerHTML = '';
+        
         var calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             locale: 'fr',
@@ -178,6 +190,22 @@
             eventDisplay: 'block'
         });
         calendar.render();
+    }
+    
+    // Initialize on various events
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initReservationCalendar);
+    } else {
+        initReservationCalendar();
+    }
+    document.addEventListener('turbo:load', initReservationCalendar);
+    document.addEventListener('turbo:render', function() {
+        // Reset initialization flag on turbo render
+        var calendarEl = document.getElementById('calendar');
+        if (calendarEl) {
+            calendarEl.dataset.initialized = 'false';
+            initReservationCalendar();
+        }
     });
 </script>
 {% endblock %}

@@ -87,10 +87,12 @@ class LoanManagementController extends AbstractController
             $loan->setApprovedAt(new \DateTimeImmutable());
             $loan->setApprovedBy($this->getUser());
             
-            // Decrement book stock
+            // Decrement book loan stock (stockEmprunt, not stockVente)
             $livre = $loan->getLivre();
-            if ($livre && $livre->getNbExemplaires() > 0) {
-                $livre->setNbExemplaires($livre->getNbExemplaires() - 1);
+            if ($livre && $livre->getStockEmprunt() > 0) {
+                $livre->setStockEmprunt($livre->getStockEmprunt() - 1);
+                // Update total for backwards compatibility
+                $livre->setNbExemplaires($livre->getStockVente() + $livre->getStockEmprunt());
             }
             
             $this->em->flush();
@@ -168,9 +170,12 @@ class LoanManagementController extends AbstractController
             $loan->setStatus(Loan::STATUS_RETURNED);
             $loan->setReturnedAt(new \DateTimeImmutable());
             
-            // Increment book exemplaires
+            // Increment book loan stock (stockEmprunt)
             if ($loan->getLivre()) {
-                $loan->getLivre()->setNbExemplaires($loan->getLivre()->getNbExemplaires() + 1);
+                $livre = $loan->getLivre();
+                $livre->setStockEmprunt($livre->getStockEmprunt() + 1);
+                // Update total for backwards compatibility
+                $livre->setNbExemplaires($livre->getStockVente() + $livre->getStockEmprunt());
             }
             
             $this->em->flush();

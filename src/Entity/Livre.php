@@ -29,6 +29,12 @@ class Livre
     #[ORM\Column]
     private ?int $nbExemplaires = null;
 
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    private int $stockVente = 0;
+
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    private int $stockEmprunt = 0;
+
     #[ORM\Column]
     private ?float $prix = null;
 
@@ -140,6 +146,54 @@ class Livre
         $this->nbExemplaires = $nbExemplaires;
 
         return $this;
+    }
+
+    public function getStockVente(): int
+    {
+        return $this->stockVente;
+    }
+
+    public function setStockVente(int $stockVente): static
+    {
+        $this->stockVente = $stockVente;
+
+        return $this;
+    }
+
+    public function getStockEmprunt(): int
+    {
+        return $this->stockEmprunt;
+    }
+
+    public function setStockEmprunt(int $stockEmprunt): static
+    {
+        $this->stockEmprunt = $stockEmprunt;
+
+        return $this;
+    }
+
+    /**
+     * Get total stock (vente + emprunt)
+     */
+    public function getTotalStock(): int
+    {
+        return $this->stockVente + $this->stockEmprunt;
+    }
+
+    /**
+     * Check if book is available for sale
+     */
+    public function isAvailableForSale(): bool
+    {
+        return $this->stockVente > 0;
+    }
+
+    /**
+     * Get available copies for lending (stock - active loans)
+     */
+    public function getAvailableLoanCopies(): int
+    {
+        return max(0, $this->stockEmprunt - $this->getActiveLoansCount());
     }
 
     public function getPrix(): ?float
@@ -387,9 +441,8 @@ class Livre
             return false;
         }
 
-        // Check if there are available copies
-        $activeLoans = $this->getActiveLoansCount();
-        return $this->nbExemplaires > $activeLoans;
+        // Check if there are available copies for lending
+        return $this->getAvailableLoanCopies() > 0;
     }
 
     /**
@@ -423,12 +476,17 @@ class Livre
     }
 
     /**
-     * Get count of active loans
+     * Get count of active loans (includes requested, approved, active, overdue)
      */
     public function getActiveLoansCount(): int
     {
         return $this->loans->filter(function (Loan $loan) {
-            return in_array($loan->getStatus(), [Loan::STATUS_ACTIVE, Loan::STATUS_OVERDUE]);
+            return in_array($loan->getStatus(), [
+                Loan::STATUS_REQUESTED,
+                Loan::STATUS_APPROVED,
+                Loan::STATUS_ACTIVE,
+                Loan::STATUS_OVERDUE
+            ]);
         })->count();
     }
 }

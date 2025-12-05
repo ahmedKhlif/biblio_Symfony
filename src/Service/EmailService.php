@@ -418,10 +418,10 @@ class EmailService implements EmailServiceInterface
         if (count($recommendations) < 3) {
             $popularBooks = $this->entityManager->getRepository(Livre::class)
                 ->createQueryBuilder('l')
-                ->where('l.stock > 0')
+                ->where('l.nbExemplaires > 0')
                 ->andWhere('l.id NOT IN (:exclude)')
                 ->setParameter('exclude', $excludeBookIds)
-                ->orderBy('l.stock', 'DESC')
+                ->orderBy('l.nbExemplaires', 'DESC')
                 ->setMaxResults(3 - count($recommendations))
                 ->getQuery()
                 ->getResult();

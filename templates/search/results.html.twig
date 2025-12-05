@@ -139,7 +139,7 @@
                             <a href="{{ path('admin', {'crudAction': 'detail', 'crudControllerFqcn': 'App\\\\Controller\\\\Admin\\\\UserCrudController', 'entityId': user.id}) }}" class="list-group-item list-group-item-action">
                                 <div class="d-flex align-items-center">
                                     {% if user.profilePicture %}
-                                        <img src="{{ asset('uploads/profiles/' ~ user.profilePicture) }}" alt="" class="rounded-circle mr-2" style="width: 30px; height: 30px; object-fit: cover;">
+                                        <img src="{{ asset('uploads/profile_pictures/' ~ user.profilePicture) }}" alt="" class="rounded-circle mr-2" style="width: 30px; height: 30px; object-fit: cover;">
                                     {% else %}
                                         <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mr-2" style="width: 30px; height: 30px; font-size: 12px;">
                                             {{ user.firstName|default('U')|first|upper }}{{ user.lastName|default('')|first|upper }}

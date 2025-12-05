@@ -47,14 +47,32 @@
                     <small class="form-text text-muted">Nombre total de pages</small>
                 </div>
                 <div class="col-md-3 mb-3">
-                    <label for="{{ form.nbExemplaires.vars.id }}" class="form-label font-weight-bold">
-                        <i class="fas fa-copy mr-1 text-success"></i>Exemplaires *
+                    <label for="{{ form.stockVente.vars.id }}" class="form-label font-weight-bold">
+                        <i class="fas fa-shopping-cart mr-1 text-success"></i>Stock Vente *
                     </label>
-                    {{ form_widget(form.nbExemplaires, {'attr': {'class': 'form-control form-control-lg', 'placeholder': '50', 'min': '0'}}) }}
-                    {{ form_errors(form.nbExemplaires) }}
-                    <small class="form-text text-muted">Quantité en stock</small>
+                    {{ form_widget(form.stockVente, {'attr': {'class': 'form-control form-control-lg', 'placeholder': '25', 'min': '0'}}) }}
+                    {{ form_errors(form.stockVente) }}
+                    <small class="form-text text-muted">Exemplaires pour la vente</small>
                 </div>
                 <div class="col-md-3 mb-3">
+                    <label for="{{ form.stockEmprunt.vars.id }}" class="form-label font-weight-bold">
+                        <i class="fas fa-book-reader mr-1 text-success"></i>Stock Emprunt *
+                    </label>
+                    {{ form_widget(form.stockEmprunt, {'attr': {'class': 'form-control form-control-lg', 'placeholder': '25', 'min': '0'}}) }}
+                    {{ form_errors(form.stockEmprunt) }}
+                    <small class="form-text text-muted">Exemplaires pour l'emprunt</small>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-md-4 mb-3">
+                    <label for="{{ form.nbExemplaires.vars.id }}" class="form-label font-weight-bold">
+                        <i class="fas fa-copy mr-1 text-secondary"></i>Total Exemplaires
+                    </label>
+                    {{ form_widget(form.nbExemplaires, {'attr': {'class': 'form-control form-control-lg bg-light', 'placeholder': '50', 'min': '0', 'readonly': 'readonly'}}) }}
+                    {{ form_errors(form.nbExemplaires) }}
+                    <small class="form-text text-muted">Total (vente + emprunt) - calculé automatiquement</small>
+                </div>
+                <div class="col-md-4 mb-3">
                     <label for="{{ form.prix.vars.id }}" class="form-label font-weight-bold">
                         <i class="fas fa-euro-sign mr-1 text-success"></i>Prix (€) *
                     </label>
@@ -62,7 +80,7 @@
                     {{ form_errors(form.prix) }}
                     <small class="form-text text-muted">Prix unitaire HT</small>
                 </div>
-                <div class="col-md-3 mb-3">
+                <div class="col-md-4 mb-3">
                     <label for="{{ form.dateEdition.vars.id }}" class="form-label font-weight-bold">
                         <i class="fas fa-calendar mr-1 text-success"></i>Date d'édition *
                     </label>
@@ -499,6 +517,24 @@
             pdfUploadZone.addEventListener('click', function() {
                 pdfFileInput.click();
             });
+            
+            // Auto-calculate total stock (vente + emprunt)
+            const stockVenteInput = document.getElementById('{{ form.stockVente.vars.id }}');
+            const stockEmpruntInput = document.getElementById('{{ form.stockEmprunt.vars.id }}');
+            const nbExemplairesInput = document.getElementById('{{ form.nbExemplaires.vars.id }}');
+            
+            function updateTotalStock() {
+                const stockVente = parseInt(stockVenteInput.value) || 0;
+                const stockEmprunt = parseInt(stockEmpruntInput.value) || 0;
+                nbExemplairesInput.value = stockVente + stockEmprunt;
+            }
+            
+            if (stockVenteInput && stockEmpruntInput && nbExemplairesInput) {
+                stockVenteInput.addEventListener('input', updateTotalStock);
+                stockEmpruntInput.addEventListener('input', updateTotalStock);
+                // Initial calculation
+                updateTotalStock();
+            }
         });
     </script>
 

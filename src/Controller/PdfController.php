@@ -78,6 +78,11 @@ class PdfController extends AbstractController
     {
         $user = $this->getUser();
 
+        // Admin has access to all PDFs
+        if ($this->isGranted('ROLE_ADMIN')) {
+            return true;
+        }
+
         // Check if user owns the book
         if ($livre->getCreatedBy() === $user) {
             return true;

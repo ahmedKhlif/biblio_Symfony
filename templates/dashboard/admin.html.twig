@@ -862,6 +862,10 @@
 
         // Run immediately
         waitForChartAndInit();
+        
+        // Support Turbo navigation
+        document.addEventListener('turbo:load', waitForChartAndInit);
+        document.addEventListener('turbo:render', waitForChartAndInit);
     })();
     </script>
 

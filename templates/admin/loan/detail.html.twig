@@ -84,11 +84,12 @@
                                     <td><small>{{ loan.livre.isbn ?? 'N/A' }}</small></td>
                                 </tr>
                                 <tr>
-                                    <th class="text-gray-800">Exemplaires</th>
+                                    <th class="text-gray-800">Stock Emprunt</th>
                                     <td>
-                                        <span class="badge badge-{% if loan.livre.nbExemplaires > 0 %}success{% else %}danger{% endif %}">
-                                            {{ loan.livre.nbExemplaires }}
+                                        <span class="badge badge-{% if loan.livre.stockEmprunt > 0 %}success{% else %}danger{% endif %}">
+                                            {{ loan.livre.stockEmprunt }}
                                         </span>
+                                        <small class="text-muted ml-1">(Vente: {{ loan.livre.stockVente }})</small>
                                     </td>
                                 </tr>
                             </table>
@@ -275,10 +276,11 @@
                     <p class="mb-1"><i class="fas fa-barcode text-muted mr-2"></i><small>{{ loan.livre.isbn ?? 'N/A' }}</small></p>
                     <p class="mb-0">
                         <i class="fas fa-copy text-muted mr-2"></i>
-                        <small>Exemplaires:</small>
-                        <span class="badge badge-{% if loan.livre.nbExemplaires > 0 %}success{% else %}danger{% endif %}">
-                            {{ loan.livre.nbExemplaires }}
+                        <small>Stock Emprunt:</small>
+                        <span class="badge badge-{% if loan.livre.stockEmprunt > 0 %}success{% else %}danger{% endif %}">
+                            {{ loan.livre.stockEmprunt }}
                         </span>
+                        <small class="text-muted">(Vente: {{ loan.livre.stockVente }})</small>
                     </p>
                 </div>
             </div>

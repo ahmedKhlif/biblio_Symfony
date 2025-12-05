@@ -363,11 +363,8 @@
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Stock</small>
-                                    {% if livre.nbExemplaires > 0 %}
-                                        <span class="badge badge-success">{{ livre.nbExemplaires }}</span>
-                                    {% else %}
-                                        <span class="badge badge-danger">Épuisé</span>
-                                    {% endif %}
+                                    <span class="badge badge-success" title="Vente">V:{{ livre.stockVente }}</span>
+                                    <span class="badge badge-info" title="Emprunt">E:{{ livre.stockEmprunt }}</span>
                                 </div>
                             </div>
                             {% endif %}
@@ -418,10 +415,15 @@
 
     <script>
         // Author Statistics Chart
-        document.addEventListener('DOMContentLoaded', function() {
+        function initAuthorChart() {
             var ctx = document.getElementById("authorStatsChart");
             if (ctx) {
-                var myPieChart = new Chart(ctx, {
+                // Destroy existing chart if it exists
+                if (window.authorChart) {
+                    window.authorChart.destroy();
+                }
+                
+                window.authorChart = new Chart(ctx, {
                     type: 'doughnut',
                     data: {
                         labels: ["Livres", "Exemplaires"],
@@ -452,6 +454,11 @@
                     },
                 });
             }
-        });
+        }
+        
+        // Support both regular page load and Turbo navigation
+        document.addEventListener('DOMContentLoaded', initAuthorChart);
+        document.addEventListener('turbo:load', initAuthorChart);
+        document.addEventListener('turbo:render', initAuthorChart);
     </script>
 {% endblock %}

@@ -162,7 +162,12 @@ class ReadingProgressController extends AbstractController
             return true;
         }
 
-        // Check if user has an active loan for this book
+        // Check if user has purchased the book
+        if (method_exists($user, 'getOwnedBooks') && $user->getOwnedBooks()->contains($livre)) {
+            return true;
+        }
+
+        // Check if user has an active or overdue loan for this book
         foreach ($livre->getLoans() as $loan) {
             if ($loan->getUser() === $user &&
                 in_array($loan->getStatus(), ['active', 'overdue'])) {

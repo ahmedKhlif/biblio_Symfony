@@ -139,7 +139,7 @@
                                             <!-- Cover -->
                                             <div class="text-center mb-3">
                                                 {% if reservation.livre.image %}
-                                                    <img src="{{ asset('uploads/livres/' ~ reservation.livre.image) }}" alt="{{ reservation.livre.titre }}" class="img-fluid rounded" style="max-height: 150px; object-fit: cover;">
+                                                    <img src="{{ asset('uploads/images/' ~ reservation.livre.image) }}" alt="{{ reservation.livre.titre }}" class="img-fluid rounded" style="max-height: 150px; object-fit: cover;">
                                                 {% else %}
                                                     <div class="bg-light rounded p-4">
                                                         <i class="fas fa-book fa-3x text-muted"></i>
@@ -159,10 +159,16 @@
                                                 <strong>Position: #{{ reservation.position }}</strong>
                                             </div>
 
+                                            <!-- Expected Availability Date -->
+                                            <div class="alert alert-info alert-sm mb-2 py-2 px-3">
+                                                <i class="fas fa-calendar-check mr-1"></i>
+                                                <strong>Disponible vers:</strong> {{ reservation.expectedAvailableDateFormatted }}
+                                            </div>
+
                                             <!-- Request Date -->
                                             <p class="small text-muted mb-0">
                                                 <i class="fas fa-calendar-alt mr-1"></i>
-                                                {{ reservation.requestedAt|date('d/m/Y') }}
+                                                Réservé le {{ reservation.requestedAt|date('d/m/Y') }}
                                             </p>
                                         </div>
                                         <div class="card-footer bg-transparent py-2 d-grid gap-2">

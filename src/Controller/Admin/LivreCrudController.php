@@ -42,7 +42,23 @@ class LivreCrudController extends AbstractCrudController
             TextField::new('titre', 'Titre'),
             TextField::new('isbn', 'ISBN'),
             IntegerField::new('nbPages', 'Nombre de pages'),
-            IntegerField::new('nbExemplaires', 'Nombre d\'exemplaires'),
+            
+            // Stock fields
+            IntegerField::new('nbExemplaires', 'Total exemplaires')
+                ->setHelp('Nombre total de référence (informatif)')
+                ->hideOnIndex(),
+            IntegerField::new('stockVente', 'Stock Vente')
+                ->setHelp('Exemplaires disponibles à la vente')
+                ->setColumns(6),
+            IntegerField::new('stockEmprunt', 'Stock Emprunt')
+                ->setHelp('Exemplaires disponibles pour emprunt')
+                ->setColumns(6),
+            IntegerField::new('totalStock', 'Stock Total')
+                ->hideOnForm()
+                ->formatValue(function ($value, $entity) {
+                    return $entity->getStockVente() + $entity->getStockEmprunt();
+                }),
+            
             MoneyField::new('prix', 'Prix')->setCurrency('EUR'),
             DateField::new('dateEdition', 'Date d\'édition')
                 ->setFormType('Symfony\Component\Form\Extension\Core\Type\DateType')

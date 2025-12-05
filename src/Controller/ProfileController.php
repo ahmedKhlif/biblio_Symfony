@@ -26,7 +26,35 @@ class ProfileController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        $form = $this->createForm(ProfileType::class, $user);
+        
+        // Get existing address data for pre-populating the form
+        $billingAddress = $user->getBillingAddress() ?? [];
+        $shippingAddress = $user->getShippingAddress() ?? [];
+        
+        $form = $this->createForm(ProfileType::class, $user, [
+            'data' => $user,
+        ]);
+        
+        // Pre-populate billing address fields
+        if (!empty($billingAddress)) {
+            $form->get('billingPrenom')->setData($billingAddress['prenom'] ?? '');
+            $form->get('billingNom')->setData($billingAddress['nom'] ?? '');
+            $form->get('billingAdresse')->setData($billingAddress['adresse'] ?? '');
+            $form->get('billingCodePostal')->setData($billingAddress['codePostal'] ?? '');
+            $form->get('billingVille')->setData($billingAddress['ville'] ?? '');
+            $form->get('billingPays')->setData($billingAddress['pays'] ?? '');
+        }
+        
+        // Pre-populate shipping address fields
+        if (!empty($shippingAddress)) {
+            $form->get('shippingPrenom')->setData($shippingAddress['prenom'] ?? '');
+            $form->get('shippingNom')->setData($shippingAddress['nom'] ?? '');
+            $form->get('shippingAdresse')->setData($shippingAddress['adresse'] ?? '');
+            $form->get('shippingCodePostal')->setData($shippingAddress['codePostal'] ?? '');
+            $form->get('shippingVille')->setData($shippingAddress['ville'] ?? '');
+            $form->get('shippingPays')->setData($shippingAddress['pays'] ?? '');
+        }
+        
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -56,41 +84,46 @@ class ProfileController extends AbstractController
 
                     $profilePictureFile->move($uploadDir, $newFilename);
                     $user->setProfilePicture($newFilename);
-                    
-                    $this->addFlash('success', 'Photo de profil mise à jour avec succès.');
                 } catch (\Exception $e) {
                     $this->addFlash('error', 'Erreur lors de l\'upload de l\'image: ' . $e->getMessage());
-                    error_log('Profile picture upload error: ' . $e->getMessage());
                 }
             }
 
-            // Handle billing address
-            $billingAddressData = $request->request->get('billingAddressForm');
-            if (is_array($billingAddressData)) {
-                // Filter out empty values
-                $billingAddress = array_filter($billingAddressData, fn($value) => !empty($value));
-                if (!empty($billingAddress)) {
-                    $user->setBillingAddress($billingAddress);
-                    // Force Doctrine to detect changes on JSON column
-                    $this->entityManager->getUnitOfWork()->propertyChanged($user, 'billingAddress', $user->getBillingAddress(), $billingAddress);
-                }
+            // Handle billing address from form fields
+            $newBillingAddress = [
+                'prenom' => $form->get('billingPrenom')->getData(),
+                'nom' => $form->get('billingNom')->getData(),
+                'adresse' => $form->get('billingAdresse')->getData(),
+                'codePostal' => $form->get('billingCodePostal')->getData(),
+                'ville' => $form->get('billingVille')->getData(),
+                'pays' => $form->get('billingPays')->getData(),
+            ];
+            // Filter out empty values
+            $newBillingAddress = array_filter($newBillingAddress, fn($value) => !empty($value));
+            if (!empty($newBillingAddress)) {
+                $user->setBillingAddress($newBillingAddress);
             }
 
-            // Handle shipping address
-            $shippingAddressData = $request->request->get('shippingAddressForm');
-            if (is_array($shippingAddressData)) {
-                // Filter out empty values
-                $shippingAddress = array_filter($shippingAddressData, fn($value) => !empty($value));
-                if (!empty($shippingAddress)) {
-                    $user->setShippingAddress($shippingAddress);
-                    // Force Doctrine to detect changes on JSON column
-                    $this->entityManager->getUnitOfWork()->propertyChanged($user, 'shippingAddress', $user->getShippingAddress(), $shippingAddress);
-                }
+            // Handle shipping address from form fields
+            $newShippingAddress = [
+                'prenom' => $form->get('shippingPrenom')->getData(),
+                'nom' => $form->get('shippingNom')->getData(),
+                'adresse' => $form->get('shippingAdresse')->getData(),
+                'codePostal' => $form->get('shippingCodePostal')->getData(),
+                'ville' => $form->get('shippingVille')->getData(),
+                'pays' => $form->get('shippingPays')->getData(),
+            ];
+            // Filter out empty values
+            $newShippingAddress = array_filter($newShippingAddress, fn($value) => !empty($value));
+            if (!empty($newShippingAddress)) {
+                $user->setShippingAddress($newShippingAddress);
             }
 
-            // Profile update successful
+            // Save the user
+            $this->entityManager->persist($user);
             $this->entityManager->flush();
-            $this->addFlash('success', 'Profil mis à jour avec succès.');
+            
+            $this->addFlash('success', 'Profil mis à jour avec succès!');
             return $this->redirectToRoute('app_profile');
         }
 

@@ -265,12 +265,20 @@
                         Carte bancaire (Stripe)
                     {% elseif order.paymentMethod == 'manual' %}
                         Virement bancaire
+                    {% elseif order.paymentMethod == 'bank_transfer' %}
+                        Virement bancaire
+                    {% elseif order.paymentMethod == 'cash' %}
+                        Paiement à la livraison
                     {% elseif order.paymentMethod == 'paypal' %}
                         PayPal
                     {% else %}
                         {{ order.paymentMethod|capitalize }}
                     {% endif %}
                 </span>
+                {% if order.stripePaymentIntentId %}
+                    <br><label>Référence Stripe:</label>
+                    <span class="payment-method-value" style="font-family: monospace; font-size: 12px;">{{ order.stripePaymentIntentId }}</span>
+                {% endif %}
             </div>
         {% endif %}
 
@@ -279,11 +287,16 @@
             <div class="address-block">
                 <div class="address-title">Facturation</div>
                 <div class="address-content">
-                    {% if order.user.billingAddress %}
-                        {{ order.user.billingAddress.prenom }} {{ order.user.billingAddress.nom }}<br>
-                        {{ order.user.billingAddress.adresse }}<br>
-                        {{ order.user.billingAddress.codePostal }} {{ order.user.billingAddress.ville }}<br>
-                        {{ order.user.billingAddress.pays }}
+                    {% if order.billingAddress %}
+                        {{ order.billingAddress['prenom']|default('') }} {{ order.billingAddress['nom']|default('') }}<br>
+                        {{ order.billingAddress['adresse']|default('') }}<br>
+                        {{ order.billingAddress['codePostal']|default('') }} {{ order.billingAddress['ville']|default('') }}<br>
+                        {{ order.billingAddress['pays']|default('') }}
+                    {% elseif order.user.billingAddress %}
+                        {{ order.user.billingAddress['prenom']|default('') }} {{ order.user.billingAddress['nom']|default('') }}<br>
+                        {{ order.user.billingAddress['adresse']|default('') }}<br>
+                        {{ order.user.billingAddress['codePostal']|default('') }} {{ order.user.billingAddress['ville']|default('') }}<br>
+                        {{ order.user.billingAddress['pays']|default('') }}
                     {% else %}
                         {{ order.user.email }}<br>
                         {{ order.user.firstName|default('') }} {{ order.user.lastName|default('') }}<br>
@@ -295,11 +308,16 @@
             <div class="address-block">
                 <div class="address-title">Livraison</div>
                 <div class="address-content">
-                    {% if order.user.shippingAddress %}
-                        {{ order.user.shippingAddress.prenom }} {{ order.user.shippingAddress.nom }}<br>
-                        {{ order.user.shippingAddress.adresse }}<br>
-                        {{ order.user.shippingAddress.codePostal }} {{ order.user.shippingAddress.ville }}<br>
-                        {{ order.user.shippingAddress.pays }}
+                    {% if order.shippingAddress %}
+                        {{ order.shippingAddress['prenom']|default('') }} {{ order.shippingAddress['nom']|default('') }}<br>
+                        {{ order.shippingAddress['adresse']|default('') }}<br>
+                        {{ order.shippingAddress['codePostal']|default('') }} {{ order.shippingAddress['ville']|default('') }}<br>
+                        {{ order.shippingAddress['pays']|default('') }}
+                    {% elseif order.user.shippingAddress %}
+                        {{ order.user.shippingAddress['prenom']|default('') }} {{ order.user.shippingAddress['nom']|default('') }}<br>
+                        {{ order.user.shippingAddress['adresse']|default('') }}<br>
+                        {{ order.user.shippingAddress['codePostal']|default('') }} {{ order.user.shippingAddress['ville']|default('') }}<br>
+                        {{ order.user.shippingAddress['pays']|default('') }}
                     {% else %}
                         Identique à la facturation
                     {% endif %}

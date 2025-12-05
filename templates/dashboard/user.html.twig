@@ -578,11 +578,11 @@
                                             <span class="font-weight-bold text-success">{{ livre.prix }} €</span>
                                         </div>
                                         <div class="col-6">
-                                            <small class="text-muted d-block">Stock</small>
-                                            {% if livre.nbExemplaires > 0 %}
-                                                <span class="badge badge-success">{{ livre.nbExemplaires }}</span>
+                                            <small class="text-muted d-block">Stock Vente</small>
+                                            {% if livre.stockVente > 0 %}
+                                                <span class="badge badge-success">{{ livre.stockVente }}</span>
                                             {% else %}
-                                                <span class="badge badge-danger">Out</span>
+                                                <span class="badge badge-danger">Épuisé</span>
                                             {% endif %}
                                         </div>
                                     </div>

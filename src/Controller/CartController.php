@@ -63,15 +63,15 @@ class CartController extends AbstractController
         if ($existingItem) {
             // Increase quantity
             $newQuantity = $existingItem->getQuantity() + 1;
-            if ($newQuantity <= $livre->getNbExemplaires()) {
+            if ($newQuantity <= $livre->getStockVente()) {
                 $existingItem->setQuantity($newQuantity);
                 $this->addFlash('success', 'Quantité mise à jour dans le panier.');
             } else {
-                $this->addFlash('warning', 'Stock insuffisant.');
+                $this->addFlash('warning', 'Stock vente insuffisant.');
             }
         } else {
             // Add new item
-            if ($livre->getNbExemplaires() > 0) {
+            if ($livre->getStockVente() > 0) {
                 $cartItem = new CartItem();
                 $cartItem->setCart($cart);
                 $cartItem->setLivre($livre);

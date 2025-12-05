@@ -50,6 +50,7 @@
                     <span>Dashboard</span></a>
             </li>
 
+            {% if not is_granted('ROLE_ADMIN') %}
             <!-- Divider -->
             <hr class="sidebar-divider">
 
@@ -84,6 +85,7 @@
                     </div>
                 </div>
             </li>
+            {% endif %}
 
             <!-- Divider -->
             <hr class="sidebar-divider">
@@ -117,12 +119,14 @@
                 </div>
             </li>
 
+            {% if not is_granted('ROLE_ADMIN') %}
             <!-- Nav Item - Mon Panier -->
             <li class="nav-item">
                 <a class="nav-link" href="{{ path('app_cart_index') }}">
                     <i class="fas fa-fw fa-shopping-cart"></i>
                     <span>Mon Panier</span></a>
             </li>
+            {% endif %}
 
             <!-- Nav Item - Mon Profil -->
             <li class="nav-item">

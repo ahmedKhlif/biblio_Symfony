@@ -36,12 +36,14 @@ class LoanAdminController extends AbstractController
             $loan->setStatus(Loan::STATUS_APPROVED);
             $loan->setApprovedAt(new \DateTimeImmutable());
 
-            // Update book stock
+            // Update book loan stock (stockEmprunt, not stockVente)
             $livre = $loan->getLivre();
-            if ($livre->getNbExemplaires() > 0) {
-                $livre->setNbExemplaires($livre->getNbExemplaires() - 1);
+            if ($livre->getStockEmprunt() > 0) {
+                $livre->setStockEmprunt($livre->getStockEmprunt() - 1);
+                // Update total for backwards compatibility
+                $livre->setNbExemplaires($livre->getStockVente() + $livre->getStockEmprunt());
             } else {
-                throw new \Exception('Aucun exemplaire disponible pour ce livre.');
+                throw new \Exception('Aucun exemplaire disponible pour l\'emprunt de ce livre.');
             }
 
             $this->entityManager->flush();
@@ -106,9 +108,11 @@ class LoanAdminController extends AbstractController
             $loan->setStatus(Loan::STATUS_RETURNED);
             $loan->setReturnedAt(new \DateTimeImmutable());
 
-            // Update book stock
+            // Update book loan stock (stockEmprunt, not stockVente)
             $livre = $loan->getLivre();
-            $livre->setNbExemplaires($livre->getNbExemplaires() + 1);
+            $livre->setStockEmprunt($livre->getStockEmprunt() + 1);
+            // Update total for backwards compatibility
+            $livre->setNbExemplaires($livre->getStockVente() + $livre->getStockEmprunt());
 
             $this->entityManager->flush();
 

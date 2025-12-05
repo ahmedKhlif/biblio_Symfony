@@ -101,4 +101,20 @@ class LoanRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Find current active loan for a specific book
+     */
+    public function findActiveOrApprovedLoanForBook(\App\Entity\Livre $livre): ?Loan
+    {
+        return $this->createQueryBuilder('l')
+            ->where('l.livre = :livre')
+            ->andWhere('l.status IN (:statuses)')
+            ->setParameter('livre', $livre)
+            ->setParameter('statuses', [Loan::STATUS_ACTIVE, Loan::STATUS_APPROVED, Loan::STATUS_REQUESTED, Loan::STATUS_OVERDUE])
+            ->orderBy('l.dueDate', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

@@ -446,55 +446,70 @@
 
                             <!-- Borrowing Status Indicator -->
                             {% if livre.isBorrowable %}
-                                {% if livre.isAvailableForBorrowing() %}
+                                {% set userHasLoan = false %}
+                                {% set userReservation = null %}
+                                {% set activeLoansCount = livre.activeLoansCount %}
+                                {% set reservationsCount = livre.activeReservationsCount %}
+                                {% if app.user %}
+                                    {% for loan in livre.loans %}
+                                        {% if loan.user == app.user and loan.status in ['requested', 'approved', 'active', 'overdue'] %}
+                                            {% set userHasLoan = true %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% for reservation in livre.reservations %}
+                                        {% if reservation.user == app.user and reservation.isActive() %}
+                                            {% set userReservation = reservation %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+
+                                {% if userHasLoan %}
+                                    <!-- User has active loan -->
+                                    <div class="position-absolute borrowing-status-indicator" style="top: 10px; left: 10px;">
+                                        <span class="badge badge-info badge-pill px-2 py-1" style="font-size: 0.75rem; font-weight: 600;">
+                                            <i class="fas fa-book-reader mr-1"></i>En cours
+                                        </span>
+                                    </div>
+                                {% elseif userReservation %}
+                                    <!-- User in queue -->
+                                    <div class="position-absolute borrowing-status-indicator" style="top: 10px; left: 10px;">
+                                        <span class="badge badge-warning badge-pill px-2 py-1" style="font-size: 0.75rem; font-weight: 600;">
+                                            <i class="fas fa-list-ol mr-1"></i>File #{{ userReservation.position }}
+                                        </span>
+                                    </div>
+                                {% elseif livre.isAvailableForBorrowing() %}
                                     <!-- Available Indicator -->
                                     <div class="position-absolute borrowing-status-indicator available-indicator" style="top: 10px; left: 10px;">
                                         <span class="badge badge-success badge-pill px-2 py-1" style="font-size: 0.75rem; font-weight: 600;">
-                                            <i class="fas fa-check-circle mr-1"></i>{{ borrowing.messages.available|default('Disponible') }}
+                                            <i class="fas fa-check-circle mr-1"></i>Disponible
                                         </span>
+                                        {% if reservationsCount > 0 %}
+                                            <span class="badge badge-info badge-pill px-2 py-1 ml-1" style="font-size: 0.65rem;">
+                                                <i class="fas fa-users"></i> {{ reservationsCount }}
+                                            </span>
+                                        {% endif %}
                                     </div>
                                 {% else %}
-                                    <!-- Not Available Indicator -->
-                                    {% set nextAvailableDate = null %}
-                                    {% for loan in livre.loans %}
-                                        {% if loan.status == 'active' and (nextAvailableDate is null or loan.dueDate > nextAvailableDate) %}
-                                            {% set nextAvailableDate = loan.dueDate %}
-                                        {% endif %}
-                                    {% endfor %}
-
-                                    {% set userReservation = null %}
-                                    {% if app.user %}
-                                        {% for reservation in livre.reservations %}
-                                            {% if reservation.user == app.user and reservation.isActive() %}
-                                                {% set userReservation = reservation %}
-                                            {% endif %}
-                                        {% endfor %}
-                                    {% endif %}
-
+                                    <!-- Not Available - Show loans/reservations count -->
                                     <div class="position-absolute borrowing-status-indicator unavailable-indicator" style="top: 10px; left: 10px;">
-                                        {% if userReservation %}
-                                            <span class="badge badge-warning badge-pill px-2 py-1" style="font-size: 0.75rem; font-weight: 600;">
-                                                <i class="fas fa-list-ol mr-1"></i>File #{{ userReservation.position }}
-                                            </span>
-                                        {% elseif nextAvailableDate %}
-                                            <span class="badge badge-info badge-pill px-2 py-1" style="font-size: 0.75rem; font-weight: 600;">
-                                                <i class="fas fa-clock mr-1"></i>{{ nextAvailableDate|date('d/m') }}
-                                            </span>
-                                        {% else %}
-                                            <span class="badge badge-secondary badge-pill px-2 py-1" style="font-size: 0.75rem; font-weight: 600;">
-                                                <i class="fas fa-ban mr-1"></i>{{ borrowing.messages.unavailable|default('Indisponible') }}
+                                        <span class="badge badge-danger badge-pill px-2 py-1" style="font-size: 0.75rem; font-weight: 600;">
+                                            <i class="fas fa-book-reader mr-1"></i>{{ activeLoansCount }}/{{ livre.stockEmprunt }}
+                                        </span>
+                                        {% if reservationsCount > 0 %}
+                                            <span class="badge badge-warning badge-pill px-2 py-1 ml-1" style="font-size: 0.65rem;">
+                                                <i class="fas fa-list-ol"></i> {{ reservationsCount }}
                                             </span>
                                         {% endif %}
                                     </div>
                                 {% endif %}
                             {% endif %}
 
-                            <!-- Stock Badge -->
-                            {% if livre.nbExemplaires > 10 %}
+                            <!-- Stock Badge (for sale) -->
+                            {% if livre.stockVente > 10 %}
                                 <span class="badge badge-success position-absolute stock-badge">
-                                    <i class="fas fa-check-circle mr-1"></i>En stock
+                                    <i class="fas fa-shopping-cart mr-1"></i>En stock
                                 </span>
-                            {% elseif livre.nbExemplaires > 0 %}
+                            {% elseif livre.stockVente > 0 %}
                                 <span class="badge badge-warning position-absolute stock-badge">
                                     <i class="fas fa-exclamation-triangle mr-1"></i>Stock faible
                                 </span>
@@ -519,39 +534,47 @@
                                      {% if is_granted('ROLE_USER') %}
                                      <form action="{{ path('app_cart_add', {'id': livre.id}) }}" method="post" class="mb-1" title="🛒 Ajouter au panier">
                                          <input type="hidden" name="_token" value="{{ csrf_token('add-cart-' ~ livre.id) }}">
-                                         <button type="submit" class="btn btn-success btn-sm cart-btn" {% if livre.nbExemplaires <= 0 %}disabled{% endif %}>
+                                         <button type="submit" class="btn btn-success btn-sm cart-btn" {% if livre.stockVente <= 0 %}disabled{% endif %}>
                                              <i class="fas fa-cart-plus"></i>
                                          </button>
                                      </form>
 
                                      {% if livre.isBorrowable %}
-                                         {% if livre.isAvailableForBorrowing() %}
+                                         {% set userHasLoan = false %}
+                                         {% set userReservation = null %}
+                                         {% if app.user %}
+                                             {% for loan in livre.loans %}
+                                                 {% if loan.user == app.user and loan.status in ['requested', 'approved', 'active', 'overdue'] %}
+                                                     {% set userHasLoan = true %}
+                                                 {% endif %}
+                                             {% endfor %}
+                                             {% for reservation in livre.reservations %}
+                                                 {% if reservation.user == app.user and reservation.isActive() %}
+                                                     {% set userReservation = reservation %}
+                                                 {% endif %}
+                                             {% endfor %}
+                                         {% endif %}
+
+                                         {% if userHasLoan %}
+                                             <!-- User has active loan - show info -->
+                                             <button type="button" class="btn btn-info btn-sm mb-1" title="📚 Emprunt en cours" disabled>
+                                                 <i class="fas fa-book-reader"></i>
+                                             </button>
+                                         {% elseif userReservation %}
+                                             <!-- User already in queue - show position -->
+                                             <button type="button" class="btn btn-warning btn-sm mb-1" title="📋 Position #{{ userReservation.position }} dans la file" disabled>
+                                                 <i class="fas fa-list-ol"></i> #{{ userReservation.position }}
+                                             </button>
+                                         {% elseif livre.isAvailableForBorrowing() %}
                                              <!-- Available for borrowing - show borrow button -->
                                              <button type="button" class="btn btn-info btn-sm loan-btn mb-1" title="📚 {{ borrowing.messages.borrow_now|default('Emprunter maintenant') }}" onclick="showBorrowModal({{ livre.id }}, '{{ livre.titre }}', true)">
                                                  <i class="fas fa-book-reader"></i>
                                              </button>
                                          {% else %}
                                              <!-- Not available - show reservation button -->
-                                             {% set userReservation = null %}
-                                             {% if app.user %}
-                                                 {% for reservation in livre.reservations %}
-                                                     {% if reservation.user == app.user and reservation.isActive() %}
-                                                         {% set userReservation = reservation %}
-                                                     {% endif %}
-                                                 {% endfor %}
-                                             {% endif %}
-
-                                             {% if userReservation %}
-                                                 <!-- Already in queue - show position -->
-                                                 <button type="button" class="btn btn-warning btn-sm mb-1" title="📋 Position {{ userReservation.position }} dans la file" disabled>
-                                                     <i class="fas fa-list-ol"></i> #{{ userReservation.position }}
-                                                 </button>
-                                             {% else %}
-                                                 <!-- Not in queue - show reservation button -->
-                                                 <button type="button" class="btn btn-secondary btn-sm loan-btn mb-1" title="📅 {{ borrowing.messages.reserve_later|default('Réserver pour plus tard') }}" onclick="showBorrowModal({{ livre.id }}, '{{ livre.titre }}', false)">
-                                                     <i class="fas fa-calendar-plus"></i>
-                                                 </button>
-                                             {% endif %}
+                                             <button type="button" class="btn btn-secondary btn-sm loan-btn mb-1" title="📅 {{ borrowing.messages.reserve_later|default('Réserver pour plus tard') }}" onclick="showBorrowModal({{ livre.id }}, '{{ livre.titre }}', false)">
+                                                 <i class="fas fa-calendar-plus"></i>
+                                             </button>
                                          {% endif %}
                                      {% endif %}
 
@@ -630,7 +653,7 @@
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="h5 font-weight-bold text-success mb-0">{{ livre.prix|number_format(2, ',', ' ') }} €</span>
                                     {% if is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') %}
-                                    <small class="text-muted">Stock: {{ livre.nbExemplaires }}</small>
+                                    <small class="text-muted">V:{{ livre.stockVente }} | E:{{ livre.stockEmprunt }}</small>
                                     {% endif %}
                                 </div>
 
@@ -720,15 +743,12 @@
                                 {% if is_granted('ROLE_MODERATOR') or is_granted('ROLE_ADMIN') %}
                                 <td>{{ livre.prix }} €</td>
                                 <td>
-                                    {% if livre.nbExemplaires > 0 %}
-                                        <span class="badge badge-success">
-                                            <i class="fas fa-check-circle mr-1"></i>En stock ({{ livre.nbExemplaires }})
-                                        </span>
-                                    {% else %}
-                                        <span class="badge badge-danger">
-                                            <i class="fas fa-times-circle mr-1"></i>Épuisé
-                                        </span>
-                                    {% endif %}
+                                    <span class="badge badge-success mr-1" title="Stock Vente">
+                                        <i class="fas fa-shopping-cart mr-1"></i>{{ livre.stockVente }}
+                                    </span>
+                                    <span class="badge badge-info" title="Stock Emprunt">
+                                        <i class="fas fa-book-reader mr-1"></i>{{ livre.stockEmprunt }}
+                                    </span>
                                 </td>
                                 {% endif %}
                                 <td>

@@ -36,8 +36,8 @@ class LoanController extends AbstractController
     #[Route('/request/{id}', name: 'app_loan_request', methods: ['POST'])]
     public function requestLoan(Livre $livre, Request $request): Response
     {
-        // Check if book is available
-        if ($livre->getNbExemplaires() <= 0) {
+        // Check if book is available for borrowing (use stockEmprunt)
+        if ($livre->getStockEmprunt() <= 0) {
             $this->addFlash('error', 'Ce livre n\'est pas disponible pour l\'emprunt.');
             return $this->redirect($request->headers->get('referer', $this->generateUrl('app_livre_index')));
         }
@@ -86,9 +86,11 @@ class LoanController extends AbstractController
         $loan->setStatus(Loan::STATUS_RETURNED);
         $loan->setReturnedAt(new \DateTimeImmutable());
 
-        // Update book stock
+        // Update book loan stock (stockEmprunt, not stockVente)
         $livre = $loan->getLivre();
-        $livre->setNbExemplaires($livre->getNbExemplaires() + 1);
+        $livre->setStockEmprunt($livre->getStockEmprunt() + 1);
+        // Update total for backwards compatibility
+        $livre->setNbExemplaires($livre->getStockVente() + $livre->getStockEmprunt());
 
         $this->entityManager->flush();
 

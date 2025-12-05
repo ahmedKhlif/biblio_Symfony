@@ -270,7 +270,16 @@
                     </h6>
                 </div>
                 <div class="card-body">
-                    {{ form_start(form, {'attr': {'class': 'user', 'enctype': 'multipart/form-data'}}) }}
+                    {{ form_start(form, {'attr': {'class': 'user', 'enctype': 'multipart/form-data', 'data-turbo': 'false'}}) }}
+                        
+                        {# Display all form errors at the top #}
+                        {% if form.vars.errors|length > 0 %}
+                            <div class="alert alert-danger mb-3">
+                                <strong><i class="fas fa-exclamation-circle mr-2"></i>Erreurs de formulaire:</strong>
+                                {{ form_errors(form) }}
+                            </div>
+                        {% endif %}
+                        
                         <div class="form-group row">
                             <div class="col-sm-6 mb-3 mb-sm-0">
                                 {{ form_label(form.username, null, {'label_attr': {'class': 'form-label'}}) }}
@@ -317,16 +326,17 @@
                                         <h5 class="upload-title">Glissez-déposez votre photo ici</h5>
                                         <p class="upload-subtitle">ou <span class="upload-link">parcourez vos fichiers</span></p>
                                     </div>
-                                    <div class="upload-preview" id="uploadPreview" style="display: none;">
-                                        <img id="previewImage" src="" alt="Aperçu" class="preview-img">
-                                        <div class="preview-overlay">
-                                            <button type="button" class="btn btn-sm btn-danger remove-preview" id="removePreview">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
+                                </div>
+                                <!-- Preview is SIBLING of upload-content, not child -->
+                                <div class="upload-preview" id="uploadPreview" style="display: none;">
+                                    <img id="previewImage" src="" alt="Aperçu" class="preview-img">
+                                    <div class="preview-overlay">
+                                        <button type="button" class="btn btn-sm btn-danger remove-preview" id="removePreview">
+                                            <i class="fas fa-times"></i>
+                                        </button>
                                     </div>
                                 </div>
-                                {{ form_widget(form.profilePicture, {'attr': {'class': 'd-none', 'id': 'profilePictureInput', 'accept': 'image/*'}}) }}
+                                {{ form_widget(form.profilePicture, {'attr': {'class': 'd-none', 'accept': 'image/*'}}) }}
                             </div>
 
                             <div class="upload-info mt-2">
@@ -356,44 +366,42 @@
                                         <div class="alert alert-info mb-3">
                                             <i class="fas fa-info-circle mr-2"></i>
                                             <strong>Adresse actuelle:</strong><br>
-                                            {% if user.billingAddress.prenom %}{{ user.billingAddress.prenom }} {% endif %}
-                                            {% if user.billingAddress.nom %}{{ user.billingAddress.nom }}{% endif %}<br>
-                                            {% if user.billingAddress.adresse %}{{ user.billingAddress.adresse }}<br>{% endif %}
-                                            {% if user.billingAddress.codePostal %}{{ user.billingAddress.codePostal }} {% endif %}
-                                            {% if user.billingAddress.ville %}{{ user.billingAddress.ville }}<br>{% endif %}
-                                            {% if user.billingAddress.pays %}{{ user.billingAddress.pays }}{% endif %}
+                                            {{ user.billingAddress['prenom']|default('') }} {{ user.billingAddress['nom']|default('') }}<br>
+                                            {% if user.billingAddress['adresse']|default('') %}{{ user.billingAddress['adresse'] }}<br>{% endif %}
+                                            {{ user.billingAddress['codePostal']|default('') }} {{ user.billingAddress['ville']|default('') }}<br>
+                                            {{ user.billingAddress['pays']|default('') }}
                                         </div>
                                     {% endif %}
                                     <div class="form-group row">
                                         <div class="col-sm-6 mb-3 mb-sm-0">
-                                            <label for="billingAddressForm_prenom" class="form-label">Prénom</label>
-                                            <input type="text" class="form-control" id="billingAddressForm_prenom" name="billingAddressForm[prenom]" value="{{ user.billingAddress.prenom|default('') }}" placeholder="Jean">
+                                            {{ form_label(form.billingPrenom) }}
+                                            {{ form_widget(form.billingPrenom) }}
                                         </div>
                                         <div class="col-sm-6">
-                                            <label for="billingAddressForm_nom" class="form-label">Nom de famille</label>
-                                            <input type="text" class="form-control" id="billingAddressForm_nom" name="billingAddressForm[nom]" value="{{ user.billingAddress.nom|default('') }}" placeholder="Dupont">
+                                            {{ form_label(form.billingNom) }}
+                                            {{ form_widget(form.billingNom) }}
                                         </div>
                                     </div>
 
                                     <div class="form-group">
-                                        <label for="billingAddressForm_adresse" class="form-label">Adresse</label>
-                                        <input type="text" class="form-control" id="billingAddressForm_adresse" name="billingAddressForm[adresse]" value="{{ user.billingAddress.adresse|default('') }}" placeholder="123 Rue de la Paix">
+                                        {{ form_label(form.billingAdresse) }}
+                                        {{ form_widget(form.billingAdresse) }}
                                     </div>
 
                                     <div class="form-group row">
                                         <div class="col-sm-6 mb-3 mb-sm-0">
-                                            <label for="billingAddressForm_codePostal" class="form-label">Code Postal</label>
-                                            <input type="text" class="form-control" id="billingAddressForm_codePostal" name="billingAddressForm[codePostal]" value="{{ user.billingAddress.codePostal|default('') }}" placeholder="75001">
+                                            {{ form_label(form.billingCodePostal) }}
+                                            {{ form_widget(form.billingCodePostal) }}
                                         </div>
                                         <div class="col-sm-6">
-                                            <label for="billingAddressForm_ville" class="form-label">Ville</label>
-                                            <input type="text" class="form-control" id="billingAddressForm_ville" name="billingAddressForm[ville]" value="{{ user.billingAddress.ville|default('') }}" placeholder="Paris">
+                                            {{ form_label(form.billingVille) }}
+                                            {{ form_widget(form.billingVille) }}
                                         </div>
                                     </div>
 
                                     <div class="form-group">
-                                        <label for="billingAddressForm_pays" class="form-label">Pays</label>
-                                        <input type="text" class="form-control" id="billingAddressForm_pays" name="billingAddressForm[pays]" value="{{ user.billingAddress.pays|default('') }}" placeholder="France">
+                                        {{ form_label(form.billingPays) }}
+                                        {{ form_widget(form.billingPays) }}
                                     </div>
                                 </div>
                             </div>
@@ -415,12 +423,10 @@
                                         <div class="alert alert-success mb-3">
                                             <i class="fas fa-info-circle mr-2"></i>
                                             <strong>Adresse actuelle:</strong><br>
-                                            {% if user.shippingAddress.prenom %}{{ user.shippingAddress.prenom }} {% endif %}
-                                            {% if user.shippingAddress.nom %}{{ user.shippingAddress.nom }}{% endif %}<br>
-                                            {% if user.shippingAddress.adresse %}{{ user.shippingAddress.adresse }}<br>{% endif %}
-                                            {% if user.shippingAddress.codePostal %}{{ user.shippingAddress.codePostal }} {% endif %}
-                                            {% if user.shippingAddress.ville %}{{ user.shippingAddress.ville }}<br>{% endif %}
-                                            {% if user.shippingAddress.pays %}{{ user.shippingAddress.pays }}{% endif %}
+                                            {{ user.shippingAddress['prenom']|default('') }} {{ user.shippingAddress['nom']|default('') }}<br>
+                                            {% if user.shippingAddress['adresse']|default('') %}{{ user.shippingAddress['adresse'] }}<br>{% endif %}
+                                            {{ user.shippingAddress['codePostal']|default('') }} {{ user.shippingAddress['ville']|default('') }}<br>
+                                            {{ user.shippingAddress['pays']|default('') }}
                                         </div>
                                     {% endif %}
                                     <button type="button" class="btn btn-sm btn-info mb-3" id="copyBillingToShipping">
@@ -428,34 +434,34 @@
                                     </button>
                                     <div class="form-group row">
                                         <div class="col-sm-6 mb-3 mb-sm-0">
-                                            <label for="shippingAddressForm_prenom" class="form-label">Prénom</label>
-                                            <input type="text" class="form-control" id="shippingAddressForm_prenom" name="shippingAddressForm[prenom]" value="{{ user.shippingAddress.prenom|default('') }}" placeholder="Jean">
+                                            {{ form_label(form.shippingPrenom) }}
+                                            {{ form_widget(form.shippingPrenom) }}
                                         </div>
                                         <div class="col-sm-6">
-                                            <label for="shippingAddressForm_nom" class="form-label">Nom de famille</label>
-                                            <input type="text" class="form-control" id="shippingAddressForm_nom" name="shippingAddressForm[nom]" value="{{ user.shippingAddress.nom|default('') }}" placeholder="Dupont">
+                                            {{ form_label(form.shippingNom) }}
+                                            {{ form_widget(form.shippingNom) }}
                                         </div>
                                     </div>
 
                                     <div class="form-group">
-                                        <label for="shippingAddressForm_adresse" class="form-label">Adresse</label>
-                                        <input type="text" class="form-control" id="shippingAddressForm_adresse" name="shippingAddressForm[adresse]" value="{{ user.shippingAddress.adresse|default('') }}" placeholder="123 Rue de la Paix">
+                                        {{ form_label(form.shippingAdresse) }}
+                                        {{ form_widget(form.shippingAdresse) }}
                                     </div>
 
                                     <div class="form-group row">
                                         <div class="col-sm-6 mb-3 mb-sm-0">
-                                            <label for="shippingAddressForm_codePostal" class="form-label">Code Postal</label>
-                                            <input type="text" class="form-control" id="shippingAddressForm_codePostal" name="shippingAddressForm[codePostal]" value="{{ user.shippingAddress.codePostal|default('') }}" placeholder="75001">
+                                            {{ form_label(form.shippingCodePostal) }}
+                                            {{ form_widget(form.shippingCodePostal) }}
                                         </div>
                                         <div class="col-sm-6">
-                                            <label for="shippingAddressForm_ville" class="form-label">Ville</label>
-                                            <input type="text" class="form-control" id="shippingAddressForm_ville" name="shippingAddressForm[ville]" value="{{ user.shippingAddress.ville|default('') }}" placeholder="Paris">
+                                            {{ form_label(form.shippingVille) }}
+                                            {{ form_widget(form.shippingVille) }}
                                         </div>
                                     </div>
 
                                     <div class="form-group">
-                                        <label for="shippingAddressForm_pays" class="form-label">Pays</label>
-                                        <input type="text" class="form-control" id="shippingAddressForm_pays" name="shippingAddressForm[pays]" value="{{ user.shippingAddress.pays|default('') }}" placeholder="France">
+                                        {{ form_label(form.shippingPays) }}
+                                        {{ form_widget(form.shippingPays) }}
                                     </div>
                                 </div>
                             </div>
@@ -518,16 +524,27 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const uploadArea = document.getElementById('profilePictureUpload');
-            const fileInput = document.getElementById('profilePictureInput');
             
-            // If profilePictureInput not found, search for the actual form field
-            let actualFileInput = fileInput;
+            // Find the actual file input - try multiple methods
+            let actualFileInput = document.getElementById('profilePictureInput');
             if (!actualFileInput) {
+                actualFileInput = document.getElementById('profile_profilePicture');
+            }
+            if (!actualFileInput) {
+                // Fallback: search by name attribute (most reliable)
+                actualFileInput = document.querySelector('input[name="profile[profilePicture]"]');
+            }
+            if (!actualFileInput) {
+                // Last resort: search for file input inside upload area
                 const inputs = uploadArea.querySelectorAll('input[type="file"]');
                 if (inputs.length > 0) {
                     actualFileInput = inputs[0];
-                    console.log('Found file input via search:', actualFileInput.id);
                 }
+            }
+            
+            if (!actualFileInput) {
+                console.error('File input not found!');
+                return;
             }
             
             const uploadContent = uploadArea.querySelector('.upload-content');
@@ -541,15 +558,23 @@
 
             // Debug info
             console.log('Profile picture upload initialized');
-            console.log('Upload area element:', uploadArea);
-            console.log('File input element (profilePictureInput):', fileInput);
-            console.log('Actual file input element:', actualFileInput);
-            console.log('Upload link element:', uploadLink);
+            console.log('Actual file input found:', actualFileInput, 'ID:', actualFileInput.id, 'Name:', actualFileInput.name);
 
-            // Prevent defaults for drag-drop
+            // Prevent defaults for drag-drop ONLY on uploadArea (not body to avoid form issues)
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                 uploadArea.addEventListener(eventName, preventDefaults, false);
-                document.body.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            // Only prevent default for drag events on body to prevent opening file in browser
+            ['dragenter', 'dragover', 'drop'].forEach(eventName => {
+                document.body.addEventListener(eventName, function(e) {
+                    // Only prevent if not inside a form/button submission context
+                    if (e.type === 'dragenter' || e.type === 'dragover' || e.type === 'drop') {
+                        if (!uploadArea.contains(e.target)) {
+                            e.preventDefault();
+                        }
+                    }
+                }, false);
             });
 
             function preventDefaults(e) {
@@ -559,11 +584,6 @@
 
             ['dragenter', 'dragover'].forEach(eventName => {
                 uploadArea.addEventListener(eventName, highlight, false);
-                document.body.addEventListener(eventName, function(e) {
-                    if (uploadArea.contains(e.target)) {
-                        highlight(e);
-                    }
-                }, false);
             });
 
             ['dragleave', 'drop'].forEach(eventName => {
@@ -685,14 +705,20 @@
             });
 
             // Form submission - ensure file is properly sent
-            const form = document.querySelector('form');
+            const form = actualFileInput.closest('form');
             if (form) {
                 form.addEventListener('submit', function(e) {
-                    console.log('Form submitted');
+                    console.log('Form submitting...');
+                    console.log('File input:', actualFileInput);
+                    console.log('Files count:', actualFileInput.files.length);
                     if (actualFileInput.files.length > 0) {
-                        console.log('File attached to form:', actualFileInput.files[0].name);
+                        console.log('File attached to form:', actualFileInput.files[0].name, 'Size:', actualFileInput.files[0].size);
+                    } else {
+                        console.log('No file selected for upload');
                     }
                 });
+            } else {
+                console.error('Form not found for file input!');
             }
 
             // Copy billing to shipping functionality
@@ -701,21 +727,21 @@
                 copyBillingBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     
-                    // Get billing form fields
-                    const billingPrenom = document.getElementById('billingAddressForm_prenom').value;
-                    const billingNom = document.getElementById('billingAddressForm_nom').value;
-                    const billingAdresse = document.getElementById('billingAddressForm_adresse').value;
-                    const billingCodePostal = document.getElementById('billingAddressForm_codePostal').value;
-                    const billingVille = document.getElementById('billingAddressForm_ville').value;
-                    const billingPays = document.getElementById('billingAddressForm_pays').value;
+                    // Get billing form fields (using Symfony form field IDs)
+                    const billingPrenom = document.getElementById('profile_billingPrenom').value;
+                    const billingNom = document.getElementById('profile_billingNom').value;
+                    const billingAdresse = document.getElementById('profile_billingAdresse').value;
+                    const billingCodePostal = document.getElementById('profile_billingCodePostal').value;
+                    const billingVille = document.getElementById('profile_billingVille').value;
+                    const billingPays = document.getElementById('profile_billingPays').value;
                     
-                    // Copy to shipping fields
-                    document.getElementById('shippingAddressForm_prenom').value = billingPrenom;
-                    document.getElementById('shippingAddressForm_nom').value = billingNom;
-                    document.getElementById('shippingAddressForm_adresse').value = billingAdresse;
-                    document.getElementById('shippingAddressForm_codePostal').value = billingCodePostal;
-                    document.getElementById('shippingAddressForm_ville').value = billingVille;
-                    document.getElementById('shippingAddressForm_pays').value = billingPays;
+                    // Copy to shipping fields (using Symfony form field IDs)
+                    document.getElementById('profile_shippingPrenom').value = billingPrenom;
+                    document.getElementById('profile_shippingNom').value = billingNom;
+                    document.getElementById('profile_shippingAdresse').value = billingAdresse;
+                    document.getElementById('profile_shippingCodePostal').value = billingCodePostal;
+                    document.getElementById('profile_shippingVille').value = billingVille;
+                    document.getElementById('profile_shippingPays').value = billingPays;
                     
                     // Expand shipping section to show the copied data
                     const shippingCollapse = document.getElementById('shippingAddressCollapse');

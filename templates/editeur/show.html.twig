@@ -337,11 +337,8 @@
                                 </div>
                                 <div class="col-6">
                                     <small class="text-muted d-block">Stock</small>
-                                    {% if livre.nbExemplaires > 0 %}
-                                        <span class="badge badge-success">{{ livre.nbExemplaires }}</span>
-                                    {% else %}
-                                        <span class="badge badge-danger">Épuisé</span>
-                                    {% endif %}
+                                    <span class="badge badge-success" title="Vente">V:{{ livre.stockVente }}</span>
+                                    <span class="badge badge-info" title="Emprunt">E:{{ livre.stockEmprunt }}</span>
                                 </div>
                             </div>
                             {% endif %}
@@ -392,10 +389,15 @@
 
     <script>
         // Publisher Statistics Chart
-        document.addEventListener('DOMContentLoaded', function() {
+        function initPublisherChart() {
             var ctx = document.getElementById("publisherStatsChart");
             if (ctx) {
-                var myPieChart = new Chart(ctx, {
+                // Destroy existing chart if it exists
+                if (window.publisherChart) {
+                    window.publisherChart.destroy();
+                }
+                
+                window.publisherChart = new Chart(ctx, {
                     type: 'doughnut',
                     data: {
                         labels: ["Livres", "Exemplaires"],
@@ -426,6 +428,11 @@
                     },
                 });
             }
-        });
+        }
+        
+        // Support both regular page load and Turbo navigation
+        document.addEventListener('DOMContentLoaded', initPublisherChart);
+        document.addEventListener('turbo:load', initPublisherChart);
+        document.addEventListener('turbo:render', initPublisherChart);
     </script>
 {% endblock %}

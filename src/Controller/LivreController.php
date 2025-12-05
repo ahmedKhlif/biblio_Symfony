@@ -3,11 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\Livre;
+use App\Entity\Loan;
 use App\Form\LivreType;
 use App\Repository\LivreRepository;
 use App\Repository\CategorieRepository;
 use App\Repository\AuteurRepository;
 use App\Repository\EditeurRepository;
+use App\Repository\BookReservationRepository;
+use App\Repository\LoanRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -185,10 +188,55 @@ final class LivreController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_livre_show', methods: ['GET'])]
-    public function show(Livre $livre): Response
+    public function show(Livre $livre, BookReservationRepository $reservationRepository, LoanRepository $loanRepository): Response
     {
+        $user = $this->getUser();
+        $hasActiveLoan = false;
+        $hasActiveReservation = false;
+        $hasPurchasedBook = false;
+        $userReservation = null;
+        
+        // Get accurate loan count from repository
+        $activeLoansCount = $loanRepository->count([
+            'livre' => $livre,
+            'status' => [Loan::STATUS_REQUESTED, Loan::STATUS_APPROVED, Loan::STATUS_ACTIVE, Loan::STATUS_OVERDUE]
+        ]);
+        
+        // Use stockEmprunt for loan availability
+        $availableLoanCopies = max(0, $livre->getStockEmprunt() - $activeLoansCount);
+        $isAvailable = $availableLoanCopies > 0 && $livre->isBorrowable();
+        
+        // Stock for sale
+        $availableSaleCopies = $livre->getStockVente();
+
+        if ($user) {
+            // Check if user has active loan for this book
+            $userLoan = $loanRepository->findOneBy([
+                'user' => $user,
+                'livre' => $livre,
+                'status' => [Loan::STATUS_REQUESTED, Loan::STATUS_APPROVED, Loan::STATUS_ACTIVE, Loan::STATUS_OVERDUE]
+            ]);
+            $hasActiveLoan = $userLoan !== null;
+
+            // Check if user has active reservation for this book
+            $userReservation = $reservationRepository->findUserActiveReservationForBook($user, $livre);
+            $hasActiveReservation = $userReservation !== null;
+
+            // Check if user purchased this book
+            /** @var \App\Entity\User $user */
+            $hasPurchasedBook = $user->getPurchasedBooks()->contains($livre);
+        }
+
         return $this->render('livre/show.html.twig', [
             'livre' => $livre,
+            'hasActiveLoan' => $hasActiveLoan,
+            'hasActiveReservation' => $hasActiveReservation,
+            'hasPurchasedBook' => $hasPurchasedBook,
+            'userReservation' => $userReservation,
+            'availableCopies' => $availableLoanCopies,
+            'availableSaleCopies' => $availableSaleCopies,
+            'isAvailable' => $isAvailable,
+            'activeLoansCount' => $activeLoansCount,
         ]);
     }
 

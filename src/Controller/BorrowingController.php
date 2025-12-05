@@ -24,21 +24,41 @@ final class BorrowingController extends AbstractController
         Livre $livre,
         Request $request,
         EntityManagerInterface $entityManager,
-        BookReservationRepository $reservationRepository
+        BookReservationRepository $reservationRepository,
+        LoanRepository $loanRepository
     ): Response {
         // Check if user already has an active loan or reservation for this book
         $user = $this->getUser();
         $existingLoan = $entityManager->getRepository(Loan::class)->findOneBy([
             'user' => $user,
             'livre' => $livre,
-            'status' => [Loan::STATUS_REQUESTED, Loan::STATUS_APPROVED, Loan::STATUS_ACTIVE]
+            'status' => [Loan::STATUS_REQUESTED, Loan::STATUS_APPROVED, Loan::STATUS_ACTIVE, Loan::STATUS_OVERDUE]
         ]);
 
         $existingReservation = $reservationRepository->findUserActiveReservationForBook($user, $livre);
 
-        if ($existingLoan || $existingReservation) {
-            $this->addFlash('warning', 'Vous avez déjà une demande en cours pour ce livre.');
-            return $this->redirectToRoute('app_livre_show', ['id' => $livre->getId()]);
+        // If user has existing loan, show info page
+        if ($existingLoan) {
+            return $this->render('borrowing/request.html.twig', [
+                'livre' => $livre,
+                'form' => null,
+                'available' => false,
+                'hasActiveLoan' => true,
+                'hasActiveReservation' => false,
+                'userReservation' => null,
+            ]);
+        }
+
+        // If user has existing reservation, show info page
+        if ($existingReservation) {
+            return $this->render('borrowing/request.html.twig', [
+                'livre' => $livre,
+                'form' => null,
+                'available' => false,
+                'hasActiveLoan' => false,
+                'hasActiveReservation' => true,
+                'userReservation' => $existingReservation,
+            ]);
         }
 
         // Check if book is available
@@ -63,6 +83,9 @@ final class BorrowingController extends AbstractController
                 'livre' => $livre,
                 'form' => $form,
                 'available' => true,
+                'hasActiveLoan' => false,
+                'hasActiveReservation' => false,
+                'userReservation' => null,
             ]);
         } else {
             // Book not available - add to reservation list
@@ -75,13 +98,58 @@ final class BorrowingController extends AbstractController
             $position = count($activeReservations) + 1;
             $reservation->setPosition($position);
 
+            // Calculate expected availability date
+            $expectedAvailableDate = $this->calculateExpectedAvailabilityDate($livre, $position, $loanRepository, $activeReservations);
+            $reservation->setExpectedAvailableDate($expectedAvailableDate);
+
             $entityManager->persist($reservation);
             $entityManager->flush();
 
-            $this->addFlash('info', 'Le livre n\'est pas disponible actuellement. Vous avez été ajouté à la liste d\'attente (position ' . $position . ').');
+            $expectedDateStr = $expectedAvailableDate ? $expectedAvailableDate->format('d/m/Y') : 'Non déterminée';
+            $this->addFlash('info', sprintf(
+                'Le livre n\'est pas disponible actuellement. Vous avez été ajouté à la liste d\'attente (position %d). Date de disponibilité estimée : %s',
+                $position,
+                $expectedDateStr
+            ));
 
             return $this->redirectToRoute('app_livre_show', ['id' => $livre->getId()]);
         }
+    }
+
+    /**
+     * Calculate expected availability date based on current loan and reservation queue
+     */
+    private function calculateExpectedAvailabilityDate(
+        Livre $livre,
+        int $position,
+        LoanRepository $loanRepository,
+        array $activeReservations
+    ): ?\DateTimeImmutable {
+        // Find current active loan for this book
+        $currentLoan = $loanRepository->findActiveOrApprovedLoanForBook($livre);
+        
+        if (!$currentLoan) {
+            // No current loan, book should become available soon
+            return new \DateTimeImmutable('+1 day');
+        }
+
+        // Start from current loan's due date
+        $baseDate = $currentLoan->getDueDate();
+        if (!$baseDate) {
+            // If no due date, estimate 14 days from now
+            $baseDate = new \DateTimeImmutable('+14 days');
+        }
+
+        // Each person in queue before this reservation adds 14 days (max loan period)
+        // Position 1 = first in queue after current borrower
+        // Position 2 = after position 1, etc.
+        $daysToAdd = ($position - 1) * 14;
+        
+        if ($daysToAdd > 0) {
+            return $baseDate->modify("+{$daysToAdd} days");
+        }
+
+        return $baseDate;
     }
 
     #[Route('/calendar/{id}', name: 'app_borrowing_calendar', methods: ['GET'])]

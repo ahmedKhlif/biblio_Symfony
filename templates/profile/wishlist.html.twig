@@ -42,8 +42,8 @@
                                 <i class="fas fa-heart"></i>
                             </button>
 
-                            <!-- Stock status -->
-                            {% if livre.nbExemplaires > 0 %}
+                            <!-- Stock status for sale -->
+                            {% if livre.stockVente > 0 %}
                                 <div class="badge badge-success position-absolute" style="bottom: 10px; left: 10px;">
                                     <i class="fas fa-check-circle mr-1"></i>En stock
                                 </div>
@@ -82,7 +82,7 @@
                                        class="btn btn-outline-primary btn-sm flex-fill">
                                         <i class="fas fa-eye mr-1"></i>Voir
                                     </a>
-                                    {% if livre.nbExemplaires > 0 %}
+                                    {% if livre.stockVente > 0 %}
                                         <form action="{{ path('app_cart_add', {'id': livre.id}) }}" method="post" class="d-inline">
                                             <input type="hidden" name="_token" value="{{ csrf_token('add-to-cart' ~ livre.id) }}">
                                             <button type="submit" class="btn btn-success btn-sm">
@@ -119,15 +119,15 @@
                             </div>
                             <div class="col-md-4 mb-3">
                                 <div class="h4 font-weight-bold text-success">
-                                    {{ wishlist|filter(livre => livre.nbExemplaires > 0)|length }}
+                                    {{ wishlist|filter(livre => livre.stockVente > 0)|length }}
                                 </div>
-                                <small class="text-muted">Disponibles</small>
+                                <small class="text-muted">Disponibles à l'achat</small>
                             </div>
                             <div class="col-md-4 mb-3">
                                 <div class="h4 font-weight-bold text-warning">
-                                    {{ wishlist|filter(livre => livre.nbExemplaires == 0)|length }}
+                                    {{ wishlist|filter(livre => livre.stockVente == 0)|length }}
                                 </div>
-                                <small class="text-muted">Épuisés</small>
+                                <small class="text-muted">Épuisés (vente)</small>
                             </div>
                         </div>
                     </div>

@@ -10,6 +10,7 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
@@ -22,7 +23,27 @@ class LivreType extends AbstractType
             ->add('titre')
             ->add('nbPages')
             ->add('dateEdition')
-            ->add('nbExemplaires')
+            ->add('nbExemplaires', IntegerType::class, [
+                'label' => 'Total exemplaires (référence)',
+                'attr' => [
+                    'min' => 0,
+                    'class' => 'form-control',
+                ],
+            ])
+            ->add('stockVente', IntegerType::class, [
+                'label' => 'Stock pour vente',
+                'attr' => [
+                    'min' => 0,
+                    'class' => 'form-control',
+                ],
+            ])
+            ->add('stockEmprunt', IntegerType::class, [
+                'label' => 'Stock pour emprunt',
+                'attr' => [
+                    'min' => 0,
+                    'class' => 'form-control',
+                ],
+            ])
             ->add('prix')
             ->add('isbn')
             ->add('isBorrowable', CheckboxType::class, [

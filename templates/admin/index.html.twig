@@ -540,6 +540,10 @@
             }
         }, 100);
     }
+    
+    // Support Turbo navigation
+    document.addEventListener('turbo:load', initCharts);
+    document.addEventListener('turbo:render', initCharts);
 })();
 </script>
 {% endblock %}

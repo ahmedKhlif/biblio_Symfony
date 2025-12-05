@@ -1,45 +1,28 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Verify Your Email - BiblioApp</title>
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: #007bff; color: white; padding: 20px; text-align: center; }
-        .content { padding: 30px; background: #f8f9fa; }
-        .button { display: inline-block; padding: 12px 24px; background: #28a745; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
-        .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>📚 BiblioApp</h1>
-            <h2>Verify Your Email Address</h2>
-        </div>
+{% extends 'emails/base.html.twig' %}
 
-        <div class="content">
-            <h3>Hello {{ user.username ?: user.email }}!</h3>
+{% block subject %}Vérifiez votre adresse email - BiblioApp{% endblock %}
 
-            <p>Welcome to BiblioApp! To start exploring our collection of books and tracking your reading progress, please verify your email address.</p>
+{% block body %}
+<h2>👋 Bienvenue sur BiblioApp !</h2>
 
-            <p>Click the button below to verify your email:</p>
+<p>Bonjour {{ user.username ?? user.email }},</p>
 
-            <a href="{{ verificationUrl }}" class="button">Verify Email Address</a>
+<p>Merci de vous être inscrit sur BiblioApp ! Pour commencer à explorer notre collection de livres et suivre votre progression de lecture, veuillez vérifier votre adresse email.</p>
 
-            <p>If the button doesn't work, you can also copy and paste this link into your browser:</p>
-            <p><a href="{{ verificationUrl }}">{{ verificationUrl }}</a></p>
+<p style="text-align: center;">
+    <a href="{{ verificationUrl }}" class="button">✅ Vérifier mon adresse email</a>
+</p>
 
-            <p>This link will expire in 24 hours for security reasons.</p>
+<div class="warning-box">
+    <p style="margin: 0;"><strong>⏰ Important :</strong> Ce lien expirera dans 24 heures pour des raisons de sécurité.</p>
+</div>
 
-            <p>If you didn't create an account with BiblioApp, please ignore this email.</p>
-        </div>
+<p>Si le bouton ne fonctionne pas, vous pouvez copier et coller ce lien dans votre navigateur :</p>
+<p style="word-break: break-all; background: #f5f5f5; padding: 10px; border-radius: 5px; font-size: 12px;">
+    <a href="{{ verificationUrl }}">{{ verificationUrl }}</a>
+</p>
 
-        <div class="footer">
-            <p>© 2024 BiblioApp. All rights reserved.</p>
-            <p>If you have any questions, contact us at support@biblioapp.tn</p>
-        </div>
-    </div>
-</body>
-</html>
+<p style="color: #666; font-size: 14px;">Si vous n'avez pas créé de compte sur BiblioApp, veuillez ignorer cet email.</p>
+
+<p>Cordialement,<br>L'équipe BiblioApp</p>
+{% endblock %}

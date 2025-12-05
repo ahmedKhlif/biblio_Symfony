@@ -239,6 +239,11 @@ class AppFixtures extends Fixture
             $livre->setTitre($data['titre']);
             $livre->setNbPages($data['nbPages']);
             $livre->setDateEdition($data['dateEdition']);
+            // Set stock for sale and loan separately
+            $stockVente = (int) floor($data['nbExemplaires'] / 2);
+            $stockEmprunt = (int) ceil($data['nbExemplaires'] / 2);
+            $livre->setStockVente($stockVente);
+            $livre->setStockEmprunt($stockEmprunt);
             $livre->setNbExemplaires($data['nbExemplaires']);
             $livre->setPrix($data['prix']);
             $livre->setIsbn($data['isbn']);

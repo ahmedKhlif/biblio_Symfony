@@ -281,13 +281,13 @@
                                         <i class="fas fa-tags text-warning mr-1"></i>{{ item.livre.categorie ? item.livre.categorie.designation : 'N/A' }}
                                     </p>
 
-                                    {% if item.livre.nbExemplaires > 10 %}
+                                    {% if item.livre.stockVente > 10 %}
                                         <span class="badge badge-success badge-lg">
-                                            <i class="fas fa-check-circle mr-1"></i>✅ En stock ({{ item.livre.nbExemplaires }} disponibles)
+                                            <i class="fas fa-check-circle mr-1"></i>✅ En stock ({{ item.livre.stockVente }} disponibles)
                                         </span>
-                                    {% elseif item.livre.nbExemplaires > 0 %}
+                                    {% elseif item.livre.stockVente > 0 %}
                                         <span class="badge badge-warning badge-lg">
-                                            <i class="fas fa-exclamation-triangle mr-1"></i>⚠️ Stock faible ({{ item.livre.nbExemplaires }} disponibles)
+                                            <i class="fas fa-exclamation-triangle mr-1"></i>⚠️ Stock faible ({{ item.livre.stockVente }} disponibles)
                                         </span>
                                     {% else %}
                                         <span class="badge badge-danger badge-lg">

@@ -118,8 +118,8 @@
             <div class="book-author">par {{ livre.auteur.prenom }} {{ livre.auteur.nom }}</div>
             <div class="stats-grid">
                 <div class="stat-item">
-                    <span class="stat-number">{{ livre.nbExemplaires }}</span>
-                    <span class="stat-label">Exemplaires</span>
+                    <span class="stat-number">{{ livre.stockEmprunt }}</span>
+                    <span class="stat-label">Stock Emprunt</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-number">{{ livre.getActiveLoansCount() }}</span>
@@ -133,7 +133,7 @@
         </div>
         <div class="col-md-4 text-center">
             {% if livre.image %}
-                <img src="{{ asset('uploads/livres/' ~ livre.image) }}" alt="{{ livre.titre }}" class="img-fluid rounded" style="max-height: 120px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+                <img src="{{ asset('uploads/images/' ~ livre.image) }}" alt="{{ livre.titre }}" class="img-fluid rounded" style="max-height: 120px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
             {% else %}
                 <div class="bg-white bg-opacity-25 rounded p-4 d-inline-block">
                     <i class="fas fa-book fa-3x"></i>
@@ -199,90 +199,110 @@
 <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.8/index.global.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.8/locales/fr.global.min.js"></script>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Small delay to ensure DOM is fully rendered
-    setTimeout(function() {
-        const calendarEl = document.getElementById('borrowing-calendar');
-        
-        // Verify element exists
-        if (!calendarEl) {
-            console.error('Calendar element not found');
-            return;
-        }
-        
-        // Parse events safely
-        let events = [];
-        try {
-            const rawEvents = {{ events|raw }};
-            events = Array.isArray(rawEvents) ? rawEvents : [];
-            console.log('Calendar events loaded:', events);
-        } catch (error) {
-            console.error('Error parsing calendar events:', error);
-            events = [];
-        }
+<script data-turbo-eval="false">
+function initBorrowingCalendar() {
+    const calendarEl = document.getElementById('borrowing-calendar');
+    
+    // Verify element exists
+    if (!calendarEl) {
+        console.error('Calendar element not found');
+        return;
+    }
+    
+    // Prevent double initialization
+    if (calendarEl.dataset.initialized === 'true') return;
+    calendarEl.dataset.initialized = 'true';
+    
+    // Clear any existing calendar
+    calendarEl.innerHTML = '';
+    
+    // Parse events safely
+    let events = [];
+    try {
+        const rawEvents = {{ events|raw }};
+        events = Array.isArray(rawEvents) ? rawEvents : [];
+        console.log('Calendar events loaded:', events);
+    } catch (error) {
+        console.error('Error parsing calendar events:', error);
+        events = [];
+    }
 
-        // Check if FullCalendar is available (wait with delay if needed)
-        const checkCalendar = setInterval(function() {
-            if (typeof FullCalendar !== 'undefined') {
-                clearInterval(checkCalendar);
-                initializeCalendar();
-            }
-        }, 100);
-
-        // Timeout after 5 seconds
-        setTimeout(function() {
-            clearInterval(checkCalendar);
-            if (typeof FullCalendar === 'undefined') {
-                console.error('FullCalendar library failed to load');
-            }
-        }, 5000);
-
-        function initializeCalendar() {
-            try {
-                const calendar = new FullCalendar.Calendar(calendarEl, {
-                    initialView: 'dayGridMonth',
-                    locale: 'fr',
-                    events: events,
-                    eventDisplay: 'block',
-                    eventTimeFormat: {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        meridiem: false
-                    },
-                    dayMaxEvents: true,
-                    moreLinkClick: 'popover',
-                    headerToolbar: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'dayGridMonth,dayGridWeek'
-                    },
-                    buttonText: {
-                        today: 'Aujourd\'hui',
-                        month: 'Mois',
-                        week: 'Semaine'
-                    },
-                    eventClick: function(info) {
-                        // Prevent navigation if event has URL
-                        if (info.event.url) {
-                            window.open(info.event.url, '_blank');
-                            info.jsEvent.preventDefault();
-                        }
-                    }
-                });
-
-                calendar.render();
-                console.log('Calendar initialized successfully');
-            } catch (error) {
-                console.error('Error initializing calendar:', error);
-            }
-        }
-
-        // If FullCalendar is already loaded, initialize immediately
+    // Check if FullCalendar is available (wait with delay if needed)
+    const checkCalendar = setInterval(function() {
         if (typeof FullCalendar !== 'undefined') {
-            initializeCalendar();
+            clearInterval(checkCalendar);
+            renderCalendar();
         }
-    }, 100); // Small delay for DOM rendering
+    }, 100);
+
+    // Timeout after 5 seconds
+    setTimeout(function() {
+        clearInterval(checkCalendar);
+        if (typeof FullCalendar === 'undefined') {
+            console.error('FullCalendar library failed to load');
+        }
+    }, 5000);
+
+    function renderCalendar() {
+        try {
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'fr',
+                events: events,
+                eventDisplay: 'block',
+                eventTimeFormat: {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    meridiem: false
+                },
+                dayMaxEvents: true,
+                moreLinkClick: 'popover',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,dayGridWeek'
+                },
+                buttonText: {
+                    today: 'Aujourd\'hui',
+                    month: 'Mois',
+                    week: 'Semaine'
+                },
+                eventClick: function(info) {
+                    // Prevent navigation if event has URL
+                    if (info.event.url) {
+                        window.open(info.event.url, '_blank');
+                        info.jsEvent.preventDefault();
+                    }
+                }
+            });
+
+            calendar.render();
+            console.log('Calendar initialized successfully');
+        } catch (error) {
+            console.error('Error initializing calendar:', error);
+        }
+    }
+
+    // If FullCalendar is already loaded, initialize immediately
+    if (typeof FullCalendar !== 'undefined') {
+        renderCalendar();
+    }
+}
+
+// Support both regular page load and Turbo navigation
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initBorrowingCalendar);
+} else {
+    initBorrowingCalendar();
+}
+document.addEventListener('turbo:load', initBorrowingCalendar);
+document.addEventListener('turbo:render', function() {
+    // Reset initialization flag on turbo render
+    var calendarEl = document.getElementById('borrowing-calendar');
+    if (calendarEl) {
+        calendarEl.dataset.initialized = 'false';
+        initBorrowingCalendar();
+    }
 });
 </script>
 {% endblock %}

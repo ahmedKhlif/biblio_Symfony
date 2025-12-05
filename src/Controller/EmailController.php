@@ -17,6 +17,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Process\Process;
+use Symfony\Component\HttpKernel\KernelInterface;
 
 #[Route('/backoffice/emails')]
 final class EmailController extends AbstractController
@@ -27,7 +29,8 @@ final class EmailController extends AbstractController
         private EntityManagerInterface $entityManager,
         private LoanRepository $loanRepository,
         private OrderRepository $orderRepository,
-        private BookReservationRepository $reservationRepository
+        private BookReservationRepository $reservationRepository,
+        private KernelInterface $kernel
     ) {}
 
     #[Route('', name: 'backoffice_emails_index')]
@@ -45,6 +48,28 @@ final class EmailController extends AbstractController
         $totalOrders = $this->orderRepository->count([]);
         $totalReservations = $this->reservationRepository->count([]);
 
+        // Get loans due soon (within 3 days) and overdue
+        $today = new \DateTimeImmutable('today');
+        $threeDaysFromNow = new \DateTimeImmutable('+3 days');
+        
+        $loansDueSoon = $this->loanRepository->createQueryBuilder('l')
+            ->where('l.status = :status')
+            ->andWhere('l.dueDate <= :dueDate')
+            ->andWhere('l.dueDate >= :today')
+            ->setParameter('status', Loan::STATUS_ACTIVE)
+            ->setParameter('dueDate', $threeDaysFromNow)
+            ->setParameter('today', $today)
+            ->getQuery()
+            ->getResult();
+
+        $overdueLoans = $this->loanRepository->createQueryBuilder('l')
+            ->where('l.status = :status')
+            ->andWhere('l.dueDate < :today')
+            ->setParameter('status', Loan::STATUS_ACTIVE)
+            ->setParameter('today', $today)
+            ->getQuery()
+            ->getResult();
+
         return $this->render('emails/index.html.twig', [
             'totalUsers' => $totalUsers,
             'verifiedUsers' => $verifiedUsers,
@@ -52,6 +77,8 @@ final class EmailController extends AbstractController
             'totalLoans' => $totalLoans,
             'totalOrders' => $totalOrders,
             'totalReservations' => $totalReservations,
+            'loansDueSoon' => $loansDueSoon,
+            'overdueLoans' => $overdueLoans,
         ]);
     }
 
@@ -507,5 +534,179 @@ final class EmailController extends AbstractController
         }
 
         return $this->redirectToRoute('backoffice_emails_reservations');
+    }
+
+    // ==================== COMMAND EXECUTION ====================
+
+    #[Route('/run-loan-reminders', name: 'backoffice_run_loan_reminders', methods: ['POST'])]
+    public function runLoanReminders(Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $reminderDays = $request->request->getInt('reminder_days', 3);
+        
+        try {
+            $projectDir = $this->kernel->getProjectDir();
+            $phpBinary = PHP_BINARY;
+            
+            $process = new Process([
+                $phpBinary,
+                $projectDir . '/bin/console',
+                'app:send-loan-reminders',
+                '--reminder-days=' . $reminderDays
+            ]);
+            
+            $process->setTimeout(120);
+            $process->run();
+
+            if ($process->isSuccessful()) {
+                $output = $process->getOutput();
+                $this->addFlash('success', 'Commande exécutée avec succès! ' . $this->parseCommandOutput($output));
+            } else {
+                $this->addFlash('error', 'Erreur: ' . $process->getErrorOutput());
+            }
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur lors de l\'exécution: ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('backoffice_emails_index');
+    }
+
+    #[Route('/run-reading-goals', name: 'backoffice_run_reading_goals', methods: ['POST'])]
+    public function runReadingGoals(): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        try {
+            $projectDir = $this->kernel->getProjectDir();
+            $phpBinary = PHP_BINARY;
+            
+            $process = new Process([
+                $phpBinary,
+                $projectDir . '/bin/console',
+                'app:update-reading-goals'
+            ]);
+            
+            $process->setTimeout(120);
+            $process->run();
+
+            if ($process->isSuccessful()) {
+                $output = $process->getOutput();
+                $this->addFlash('success', 'Objectifs de lecture mis à jour! ' . $this->parseCommandOutput($output));
+            } else {
+                $this->addFlash('error', 'Erreur: ' . $process->getErrorOutput());
+            }
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur lors de l\'exécution: ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('backoffice_emails_index');
+    }
+
+    #[Route('/send-overdue-alerts', name: 'backoffice_send_overdue_alerts', methods: ['POST'])]
+    public function sendOverdueAlerts(): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        try {
+            $today = new \DateTimeImmutable('today');
+            
+            $overdueLoans = $this->loanRepository->createQueryBuilder('l')
+                ->where('l.status = :status')
+                ->andWhere('l.dueDate < :today')
+                ->setParameter('status', Loan::STATUS_ACTIVE)
+                ->setParameter('today', $today)
+                ->getQuery()
+                ->getResult();
+
+            if (empty($overdueLoans)) {
+                $this->addFlash('info', 'Aucun prêt en retard trouvé.');
+                return $this->redirectToRoute('backoffice_emails_index');
+            }
+
+            // Send overdue alert to admins
+            $this->emailService->sendOverdueLoanAlertToAdmins($overdueLoans);
+            
+            // Also send individual overdue emails to users
+            $count = 0;
+            foreach ($overdueLoans as $loan) {
+                try {
+                    $this->emailService->sendLoanOverdueEmail($loan);
+                    $count++;
+                } catch (\Exception $e) {
+                    // Continue with others
+                }
+            }
+
+            $this->addFlash('success', sprintf(
+                'Alertes envoyées: %d utilisateur(s) notifié(s), admins alertés pour %d prêt(s) en retard.',
+                $count,
+                count($overdueLoans)
+            ));
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur: ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('backoffice_emails_index');
+    }
+
+    #[Route('/send-return-reminders', name: 'backoffice_send_return_reminders', methods: ['POST'])]
+    public function sendReturnReminders(Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $reminderDays = $request->request->getInt('reminder_days', 3);
+
+        try {
+            $today = new \DateTimeImmutable('today');
+            $dueDate = new \DateTimeImmutable('+' . $reminderDays . ' days');
+            
+            $loansDueSoon = $this->loanRepository->createQueryBuilder('l')
+                ->where('l.status = :status')
+                ->andWhere('l.dueDate <= :dueDate')
+                ->andWhere('l.dueDate >= :today')
+                ->setParameter('status', Loan::STATUS_ACTIVE)
+                ->setParameter('dueDate', $dueDate)
+                ->setParameter('today', $today)
+                ->getQuery()
+                ->getResult();
+
+            if (empty($loansDueSoon)) {
+                $this->addFlash('info', 'Aucun prêt à échéance proche trouvé.');
+                return $this->redirectToRoute('backoffice_emails_index');
+            }
+
+            $count = 0;
+            foreach ($loansDueSoon as $loan) {
+                try {
+                    $this->emailService->sendLoanReturnReminderEmail($loan);
+                    $count++;
+                } catch (\Exception $e) {
+                    // Continue with others
+                }
+            }
+
+            $this->addFlash('success', sprintf(
+                'Rappels envoyés à %d utilisateur(s) pour les prêts à rendre dans les %d prochains jours.',
+                $count,
+                $reminderDays
+            ));
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur: ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('backoffice_emails_index');
+    }
+
+    private function parseCommandOutput(string $output): string
+    {
+        // Extract key info from command output
+        if (preg_match('/(\d+)\s*reminder/', $output, $matches)) {
+            return $matches[1] . ' rappel(s) envoyé(s).';
+        }
+        if (preg_match('/(\d+)\s*overdue/', $output, $matches)) {
+            return $matches[1] . ' notification(s) de retard envoyée(s).';
+        }
+        return '';
     }
 }

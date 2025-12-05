@@ -182,8 +182,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    function initReservationCalendar() {
         var calendarEl = document.getElementById('calendar');
+        if (!calendarEl) return;
+        
+        // Clear any existing calendar
+        calendarEl.innerHTML = '';
+        
         var calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
             locale: 'fr',
@@ -202,6 +207,11 @@
             eventDisplay: 'block'
         });
         calendar.render();
-    });
+    }
+    
+    // Support both regular page load and Turbo navigation
+    document.addEventListener('DOMContentLoaded', initReservationCalendar);
+    document.addEventListener('turbo:load', initReservationCalendar);
+    document.addEventListener('turbo:render', initReservationCalendar);
 </script>
 {% endblock %}

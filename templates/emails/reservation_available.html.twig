@@ -2,7 +2,7 @@
 
 {% block title %}Livre réservé disponible{% endblock %}
 
-{% block content %}
+{% block body %}
 <h2>🎉 Le livre réservé est maintenant disponible !</h2>
 
 <p>Bonjour {{ user.username ?? user.email }},</p>
@@ -14,7 +14,7 @@
     <p>
         <strong>Auteur :</strong> {{ book.auteur ? book.auteur.prenom ~ ' ' ~ book.auteur.nom : 'Non spécifié' }}<br>
         <strong>Catégorie :</strong> {{ book.categorie ? book.categorie.designation : 'Non spécifiée' }}<br>
-        <strong>Stock disponible :</strong> {{ book.nbExemplaires }} exemplaire(s)
+        <strong>Stock disponible pour emprunt :</strong> {{ book.stockEmprunt }} exemplaire(s)
     </p>
 </div>
 

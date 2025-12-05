@@ -65,10 +65,10 @@
                             <div class="border p-3 rounded">
                                 <h6 class="font-weight-bold mb-2">Adresse de livraison</h6>
                                 {% if order.shippingAddress %}
-                                    <p class="mb-1">{{ order.shippingAddress.nom }} {{ order.shippingAddress.prenom }}</p>
-                                    <p class="mb-1">{{ order.shippingAddress.adresse }}</p>
-                                    <p class="mb-1">{{ order.shippingAddress.codePostal }} {{ order.shippingAddress.ville }}</p>
-                                    <p class="mb-0">{{ order.shippingAddress.pays }}</p>
+                                    <p class="mb-1">{{ order.shippingAddress['nom']|default('') }} {{ order.shippingAddress['prenom']|default('') }}</p>
+                                    <p class="mb-1">{{ order.shippingAddress['adresse']|default('') }}</p>
+                                    <p class="mb-1">{{ order.shippingAddress['codePostal']|default('') }} {{ order.shippingAddress['ville']|default('') }}</p>
+                                    <p class="mb-0">{{ order.shippingAddress['pays']|default('') }}</p>
                                 {% else %}
                                     <p class="text-muted">Non spécifiée</p>
                                 {% endif %}
@@ -78,10 +78,10 @@
                             <div class="border p-3 rounded">
                                 <h6 class="font-weight-bold mb-2">Adresse de facturation</h6>
                                 {% if order.billingAddress %}
-                                    <p class="mb-1">{{ order.billingAddress.nom }} {{ order.billingAddress.prenom }}</p>
-                                    <p class="mb-1">{{ order.billingAddress.adresse }}</p>
-                                    <p class="mb-1">{{ order.billingAddress.codePostal }} {{ order.billingAddress.ville }}</p>
-                                    <p class="mb-0">{{ order.billingAddress.pays }}</p>
+                                    <p class="mb-1">{{ order.billingAddress['nom']|default('') }} {{ order.billingAddress['prenom']|default('') }}</p>
+                                    <p class="mb-1">{{ order.billingAddress['adresse']|default('') }}</p>
+                                    <p class="mb-1">{{ order.billingAddress['codePostal']|default('') }} {{ order.billingAddress['ville']|default('') }}</p>
+                                    <p class="mb-0">{{ order.billingAddress['pays']|default('') }}</p>
                                 {% else %}
                                     <p class="text-muted">Non spécifiée</p>
                                 {% endif %}

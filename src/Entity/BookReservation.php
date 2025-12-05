@@ -35,6 +35,9 @@ class BookReservation
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $notifiedAt = null;
 
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $expectedAvailableDate = null;
+
     public function __construct()
     {
         $this->requestedAt = new \DateTimeImmutable();
@@ -122,6 +125,23 @@ class BookReservation
         $this->notifiedAt = $notifiedAt;
 
         return $this;
+    }
+
+    public function getExpectedAvailableDate(): ?\DateTimeImmutable
+    {
+        return $this->expectedAvailableDate;
+    }
+
+    public function setExpectedAvailableDate(?\DateTimeImmutable $expectedAvailableDate): static
+    {
+        $this->expectedAvailableDate = $expectedAvailableDate;
+
+        return $this;
+    }
+
+    public function getExpectedAvailableDateFormatted(): string
+    {
+        return $this->expectedAvailableDate ? $this->expectedAvailableDate->format('d/m/Y') : 'Non déterminée';
     }
 
     public function getRequestedAtFormatted(): string

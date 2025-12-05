@@ -57,7 +57,10 @@ final class PasswordResetController extends AbstractController
             }
 
             // Always show success message for security (don't reveal if email exists)
-            $this->addFlash('success', 'If an account with that email exists, we have sent you a password reset link.');
+            // Redirect to login page with success message
+            $this->addFlash('success', 'Si un compte avec cette adresse email existe, nous vous avons envoyé un lien de réinitialisation. Veuillez vérifier votre boîte de réception.');
+            
+            return $this->redirectToRoute('app_login');
         }
 
         return $this->render('security/forgot_password.html.twig');
