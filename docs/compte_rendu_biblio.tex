@@ -164,40 +164,15 @@ Le diagramme suivant présente les cas d'utilisation principaux du système :
     \caption{Diagramme Complet des Cas d'Utilisation}
     \label{fig:usecases}
 \end{figure}
-        UC22[Noter un livre]
-    end
-    
-    subgraph "Communication"
-        UC23[Envoyer un message]
-        UC24[Consulter les messages]
-    end
-    
-    V --> UC1
-    V --> UC2
-    V --> UC3
-    
-    U --> UC5
-    U --> UC6
-    U --> UC8
-    U --> UC9
-    U --> UC10
-    U --> UC11
-    U --> UC14
-    U --> UC15
-    U --> UC16
-    U --> UC17
-    U --> UC19
-    U --> UC20
-    U --> UC21
-    U --> UC22
-    U --> UC23
-    U --> UC24
-    
-    A --> UC4
-    A --> UC7
-    A --> UC12
-    A --> UC13
-    A --> UC18
+
+\subsubsection{Parcours Utilisateur}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{09_user_workflow.png}
+    \caption{Flux de Navigation et Parcours Utilisateur}
+    \label{fig:user_workflow}
+\end{figure}
 
 \subsection{Diagramme de Séquence - Processus de Prêt}
 
@@ -219,6 +194,15 @@ Le diagramme suivant présente les cas d'utilisation principaux du système :
 
 \section{Architecture Technique}
 
+\subsection{Flux d'Installation et Démarrage}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{12_installation.png}
+    \caption{Processus d'Installation et de Démarrage du Projet}
+    \label{fig:installation}
+\end{figure}
+
 \subsection{Architecture MVC}
 
 L'application suit strictement le pattern Modèle-Vue-Contrôleur de Symfony :
@@ -239,38 +223,6 @@ L'application suit strictement le pattern Modèle-Vue-Contrôleur de Symfony :
     \caption{Architecture Complète de Biblio}
     \label{fig:architecture}
 \end{figure}
-    
-    subgraph "Data Layer"
-        ORM[Doctrine ORM]
-        DB[(MySQL Database)]
-        REPO[Repositories]
-    end
-    
-    subgraph "External Services"
-        STRIPE[Stripe API]
-        SMTP[SMTP Server]
-    end
-    
-    B --> PC
-    JS --> API
-    FC --> UC
-    TU --> PC
-    
-    PC --> ES
-    UC --> SS
-    AC --> AL
-    
-    PC --> ORM
-    UC --> ORM
-    AC --> ORM
-    
-    ORM --> DB
-    REPO --> ORM
-    
-    SS --> STRIPE
-    ES --> SMTP
-```
-\end{verbatim}
 
 \subsection{Technologies Implémentées}
 
@@ -406,6 +358,13 @@ public function getAvailableLoanCopies(): int
     \item Validation précise de la disponibilité par type d'opération
 \end{itemize}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{06_stock_flow.png}
+    \caption{Système de Stock Double - Flux de Gestion}
+    \label{fig:stock_flow}
+\end{figure}
+
 \section{Fonctionnalités Implémentées}
 
 \subsection{Gestion des Utilisateurs et Authentification}
@@ -463,20 +422,12 @@ public function getAvailableLoanCopies(): int
     \item \textbf{Annulé (cancelled)} : Demande annulée
 \end{enumerate}
 
-\begin{verbatim}
-```mermaid
-stateDiagram-v2
-    [*] --> requested : Demande d'emprunt
-    requested --> approved : Admin approuve
-    requested --> cancelled : Admin refuse / User annule
-    approved --> active : Livre remis
-    active --> returned : Livre retourné
-    active --> overdue : Date dépassée
-    overdue --> returned : Livre retourné (retard)
-    returned --> [*]
-    cancelled --> [*]
-```
-\end{verbatim}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{04_loan_states.png}
+    \caption{Machine à États du Statut des Prêts}
+    \label{fig:loan_states}
+\end{figure}
 
 \subsubsection{Fonctionnalités du Prêt}
 \begin{itemize}
@@ -508,6 +459,13 @@ stateDiagram-v2
     \item Mise à jour en temps réel
 \end{itemize}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{10_calendar.png}
+    \caption{Vue du Calendrier de Disponibilité des Livres}
+    \label{fig:calendar_view}
+\end{figure}
+
 \subsection{Module E-Commerce}
 
 \subsubsection{Panier d'Achat}
@@ -531,22 +489,22 @@ stateDiagram-v2
 \end{itemize}
 
 \subsubsection{Statuts de Commande}
-\begin{verbatim}
-```mermaid
-stateDiagram-v2
-    [*] --> pending : Commande créée
-    pending --> paid : Paiement confirmé
-    pending --> cancelled : Annulation
-    paid --> processing : En préparation
-    processing --> shipped : Expédiée
-    processing --> cancelled : Annulation
-    shipped --> delivered : Livrée
-    delivered --> refunded : Remboursement
-    delivered --> [*]
-    cancelled --> [*]
-    refunded --> [*]
-```
-\end{verbatim}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{05_order_states.png}
+    \caption{Machine à États du Statut des Commandes}
+    \label{fig:order_states}
+\end{figure}
+
+\subsubsection{Flux de Paiement}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{13_payment_flow.png}
+    \caption{Flux de Paiement Stripe Intégré}
+    \label{fig:payment_flow}
+\end{figure}
 
 \subsection{Système d'Avis et Notes}
 
@@ -619,6 +577,15 @@ stateDiagram-v2
     \item Gestion des réservations avec file d'attente
     \item Statistiques avancées
 \end{itemize}
+
+\subsubsection{Vue d'Ensemble de l'Administration}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{11_admin_dashboard.png}
+    \caption{Structure du Tableau de Bord Administrateur}
+    \label{fig:admin_dashboard}
+\end{figure}
 
 \section{Structure du Projet}
 
@@ -777,6 +744,15 @@ public function up(Schema $schema): void
 }
 \end{lstlisting}
 
+\subsubsection{Stratégie de Migration du Stock}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{14_migration.png}
+    \caption{Stratégie de Migration du Système de Stock Double}
+    \label{fig:migration_strategy}
+\end{figure}
+
 \section{Tests et Validation}
 
 \subsection{Cas de Test - Système de Prêt}
@@ -900,6 +876,13 @@ L'application utilise Bootstrap 4 pour un design entièrement responsive :
     \item Validation des uploads de fichiers
     \item Sanitation des entrées utilisateur
 \end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{15_security.png}
+    \caption{Couches de Sécurité du Système}
+    \label{fig:security}
+\end{figure}
 
 \section{Conclusion et Perspectives}
 
