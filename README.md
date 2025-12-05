@@ -12,6 +12,7 @@ A comprehensive, production-ready library management system built with **Symfony
 ## 📋 Table of Contents
 
 - [Features](#-features)
+- [Recent Updates](#-recent-updates)
 - [System Architecture](#-system-architecture)
 - [Installation](#-installation)
 - [Configuration](#-configuration)
@@ -35,7 +36,7 @@ A comprehensive, production-ready library management system built with **Symfony
 | **Authors (Auteurs)** | Author profiles with biography and book relationships |
 | **Categories** | Book categorization with descriptions |
 | **Publishers (Editeurs)** | Publisher management with contact info |
-| **Stock Tracking** | Real-time availability with `nbExemplaires` field |
+| **Dual Stock System** | Separate `stockVente` (for sales) and `stockEmprunt` (for loans) with auto-calculated `nbExemplaires` |
 | **Borrowable Flag** | `isBorrowable` to control which books can be loaned |
 
 ### 📖 Loan System
@@ -44,8 +45,10 @@ A comprehensive, production-ready library management system built with **Symfony
 | **Loan Workflow** | `requested` → `approved` → `active` → `returned` (or `overdue`/`cancelled`) |
 | **Due Date Tracking** | Automatic 14-day loan period with overdue detection |
 | **Admin Approval** | Loans require admin approval before activation |
-| **Return Processing** | Mark books as returned, auto-update stock |
+| **Return Processing** | Mark books as returned, auto-update `stockEmprunt` |
 | **Loan History** | Complete audit trail with timestamps |
+| **Availability Calendar** | FullCalendar.js view showing loan periods and expected return dates |
+| **Loan Reminders** | Console command to send overdue loan reminders |
 
 ### 📅 Reservation System
 | Feature | Description |
@@ -54,16 +57,18 @@ A comprehensive, production-ready library management system built with **Symfony
 | **Notifications** | `notifiedAt` tracks when user was alerted |
 | **Active Status** | `isActive` flag to manage reservation lifecycle |
 | **Auto-Conversion** | Reservations can convert to loans when book available |
+| **Availability Calendar** | Interactive calendar showing when book will be available |
 
 ### 🛒 E-Commerce
 | Feature | Description |
 |---------|-------------|
-| **Shopping Cart** | Persistent cart with `CartItem` quantities |
+| **Shopping Cart** | Persistent cart with `CartItem` quantities, validates against `stockVente` |
 | **Orders** | Full order lifecycle: `pending` → `paid` → `processing` → `shipped` → `delivered` |
 | **Stripe Integration** | Secure card payments with `stripePaymentIntentId` |
 | **Multiple Payment Methods** | Stripe, bank transfer, cash on delivery, manual |
 | **Order Numbers** | Auto-generated format: `ORD-YYYYMMDD-XXXXXX-XXXX` |
 | **Addresses** | Separate billing and shipping addresses (JSON) |
+| **Stock Validation** | Automatic `stockVente` check before purchase |
 
 ### ⭐ Reviews & Ratings
 | Feature | Description |
@@ -133,6 +138,32 @@ A comprehensive, production-ready library management system built with **Symfony
 | **Custom SB Admin 2** (`/backoffice`) | Rich dashboards, charts, custom workflows |
 | **Loan Management** (`/admin/loans`) | Dedicated loan approval/tracking |
 | **Reservation Management** (`/admin/reservations`) | Queue management |
+
+---
+
+## 🆕 Recent Updates
+
+### December 2025 - Dual Stock System
+Major update separating stock for sales and loans:
+
+| Update | Description |
+|--------|-------------|
+| **`stockVente`** | New field for books available for purchase |
+| **`stockEmprunt`** | New field for books available for borrowing |
+| **Auto-calculated Total** | `nbExemplaires` now automatically sums both stocks |
+| **Cart Validation** | Shopping cart validates against `stockVente` |
+| **Loan Validation** | Loan requests validate against `stockEmprunt` |
+| **Form Updates** | Book forms (admin + frontend) updated with dual stock fields |
+| **Template Updates** | All book displays show "V: X | E: Y" format for stock |
+
+### Availability Calendar
+- **FullCalendar.js Integration** | Interactive calendar for loan/reservation availability
+- **Turbo Compatibility** | Fixed JavaScript initialization with Turbo/Hotwire navigation
+- **Visual Timeline** | See active loans and expected return dates
+
+### Loan Reminders
+- **Console Command** | `php bin/console app:send-loan-reminders` for overdue notifications
+- **Email Integration** | Automated reminder emails to users with overdue books
 
 ---
 

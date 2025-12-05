@@ -1,0 +1,1862 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{tabularx}
+
+\geometry{margin=2.5cm}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\leftmark}
+\fancyhead[R]{\thepage}
+
+\lstset{
+    language=PHP,
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!60!black},
+    stringstyle=\color{red},
+    numbers=left,
+    numberstyle=\tiny,
+    frame=single,
+    breaklines=true,
+    captionpos=b
+}
+
+\begin{document}
+
+% Page de garde
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+
+    {\LARGE \textbf{L'Institut Supérieur des Études Technologiques de Sfax}}\\[0.3cm]
+    {\LARGE \textbf{ISET Sfax}}\\[0.5cm]
+    {\large Département Technologies de l'Informatique}\\[3cm]
+
+    {\Huge\bfseries Compte Rendu\par}
+    \vspace{0.5cm}
+    {\LARGE Mini-Projet\par}
+    \vspace{0.3cm}
+    {\Large Biblio - Système de Gestion de Bibliothèque\par}
+    \vspace{3cm}
+
+    \begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=Objectifs du Projet]
+    \begin{itemize}
+        \item Développer un système complet de gestion de bibliothèque
+        \item Implémenter un workflow de prêt et réservation de livres
+        \item Créer un système e-commerce avec paiement Stripe
+        \item Développer un système de messagerie interne
+        \item Fournir une interface utilisateur moderne et responsive
+        \item Mettre en place une double interface d'administration (EasyAdmin + Custom)
+        \item Implémenter un système de suivi de progression de lecture
+        \item Gérer les stocks séparément pour vente et emprunt
+    \end{itemize}
+    \end{tcolorbox}
+
+    \vfill
+
+    {\large \textbf{Matière:}} Framework web avancé\\[0.3cm]
+    {\large \textbf{Enseignant:}} M. Faiez Charfi\\[1cm]
+
+    {\large \textbf{Réalisé par:}}\\[0.3cm]
+    {\large Ahmed Khlif}\\[0.2cm]
+    {\large Classe: GLNT}\\[1.5cm]
+
+    {\large Année Universitaire: 2025/2026}
+
+    \vspace{1cm}
+
+    {\large \textbf{Dépôt GitHub:}} \\
+    \href{https://github.com/ahmedKhlif/biblio_Symfony}{https://github.com/ahmedKhlif/biblio\_Symfony}
+
+\end{titlepage}
+
+% Nouvelle page pour le contenu
+\newpage
+\tableofcontents
+\newpage
+
+\section{Présentation du Projet}
+
+\subsection{Contexte et Objectifs}
+
+Biblio est un système de gestion de bibliothèque complet et prêt pour la production, développé avec Symfony 7 et PHP 8.2+. Ce mini-projet démontre l'implémentation d'une solution moderne pour la gestion d'une bibliothèque numérique avec des fonctionnalités avancées.
+
+\textbf{Objectifs principaux :}
+\begin{itemize}
+    \item Développer un système de gestion de bibliothèque fonctionnel
+    \item Implémenter un workflow complet de prêt de livres
+    \item Créer un système de réservation avec file d'attente
+    \item Intégrer un module e-commerce avec paiement Stripe
+    \item Développer un système de messagerie interne
+    \item Fournir une interface utilisateur moderne et responsive
+    \item Mettre en place une double interface d'administration
+    \item Gérer les stocks de manière intelligente (vente vs emprunt)
+\end{itemize}
+
+\subsection{Références}
+
+\begin{itemize}
+    \item \textbf{Dépôt GitHub} : \href{https://github.com/ahmedKhlif/biblio_Symfony}{https://github.com/ahmedKhlif/biblio\_Symfony}
+    \item \textbf{Technologies} : Symfony 7, PHP 8.2+, Doctrine ORM, MySQL
+    \item \textbf{Framework Frontend} : Bootstrap 4, jQuery, FullCalendar.js
+    \item \textbf{Intégrations} : Stripe (paiements), SMTP (emails), Turbo/Hotwire
+    \item \textbf{Admin} : EasyAdmin 4, SB Admin 2 (personnalisé)
+\end{itemize}
+
+\section{Analyse Fonctionnelle}
+
+\subsection{Acteurs du Système}
+
+\subsubsection{L'Utilisateur (User)}
+\begin{itemize}
+    \item Navigation et consultation du catalogue de livres
+    \item Recherche avancée avec filtres (auteur, catégorie, éditeur)
+    \item Gestion du panier d'achat avec validation de stock
+    \item Processus de commande avec paiement Stripe
+    \item Demande d'emprunt de livres
+    \item Réservation de livres indisponibles
+    \item Consultation du calendrier de disponibilité
+    \item Suivi de progression de lecture
+    \item Gestion des objectifs de lecture
+    \item Messagerie interne avec autres utilisateurs
+    \item Rédaction d'avis et notes sur les livres
+    \item Gestion du profil et liste de souhaits
+\end{itemize}
+
+\subsubsection{L'Administrateur (Admin)}
+\begin{itemize}
+    \item Gestion complète des livres (CRUD)
+    \item Gestion des auteurs, catégories et éditeurs
+    \item Approbation et gestion des demandes de prêt
+    \item Gestion de la file d'attente des réservations
+    \item Gestion des utilisateurs et rôles
+    \item Consultation des statistiques et analytics
+    \item Gestion des bannières promotionnelles
+    \item Consultation des journaux d'activité
+    \item Gestion des commandes et paiements
+    \item Modération des avis utilisateurs
+\end{itemize}
+
+\subsection{Diagramme des Cas d'Utilisation}
+
+Le diagramme suivant présente les cas d'utilisation principaux du système :
+
+\begin{verbatim}
+```mermaid
+graph TB
+    subgraph Acteurs
+        U[Utilisateur]
+        A[Administrateur]
+        V[Visiteur]
+    end
+    
+    subgraph "Gestion des Livres"
+        UC1[Consulter le catalogue]
+        UC2[Rechercher un livre]
+        UC3[Voir les détails d'un livre]
+        UC4[Gérer les livres - CRUD]
+    end
+    
+    subgraph "Système de Prêt"
+        UC5[Demander un emprunt]
+        UC6[Voir le calendrier de disponibilité]
+        UC7[Approuver/Refuser un prêt]
+        UC8[Retourner un livre]
+        UC9[Voir l'historique des prêts]
+    end
+    
+    subgraph "Système de Réservation"
+        UC10[Réserver un livre indisponible]
+        UC11[Voir la position dans la file]
+        UC12[Gérer les réservations]
+        UC13[Notifier l'utilisateur]
+    end
+    
+    subgraph "E-Commerce"
+        UC14[Ajouter au panier]
+        UC15[Passer une commande]
+        UC16[Payer avec Stripe]
+        UC17[Suivre la commande]
+        UC18[Gérer les commandes]
+    end
+    
+    subgraph "Lecture et Avis"
+        UC19[Suivre la progression]
+        UC20[Définir des objectifs]
+        UC21[Rédiger un avis]
+        UC22[Noter un livre]
+    end
+    
+    subgraph "Communication"
+        UC23[Envoyer un message]
+        UC24[Consulter les messages]
+    end
+    
+    V --> UC1
+    V --> UC2
+    V --> UC3
+    
+    U --> UC5
+    U --> UC6
+    U --> UC8
+    U --> UC9
+    U --> UC10
+    U --> UC11
+    U --> UC14
+    U --> UC15
+    U --> UC16
+    U --> UC17
+    U --> UC19
+    U --> UC20
+    U --> UC21
+    U --> UC22
+    U --> UC23
+    U --> UC24
+    
+    A --> UC4
+    A --> UC7
+    A --> UC12
+    A --> UC13
+    A --> UC18
+```
+\end{verbatim}
+
+\subsection{Diagramme de Séquence - Processus de Prêt}
+
+\begin{verbatim}
+```mermaid
+sequenceDiagram
+    participant U as Utilisateur
+    participant S as Système
+    participant DB as Base de données
+    participant A as Admin
+    participant E as Email Service
+    
+    U->>S: Demander un emprunt
+    S->>DB: Vérifier stockEmprunt > 0
+    
+    alt Stock disponible
+        DB-->>S: Stock OK
+        S->>DB: Créer Loan (status: requested)
+        DB-->>S: Loan créé
+        S->>E: Notifier l'admin
+        S-->>U: Demande enregistrée
+        
+        A->>S: Consulter les demandes
+        S-->>A: Liste des demandes
+        A->>S: Approuver le prêt
+        S->>DB: Mettre à jour status: approved
+        S->>DB: Décrémenter stockEmprunt
+        S->>DB: Calculer dueDate (+14 jours)
+        S->>E: Notifier l'utilisateur
+        S-->>A: Prêt approuvé
+        
+        Note over U,S: Période de prêt (14 jours)
+        
+        U->>S: Retourner le livre
+        S->>DB: Mettre à jour status: returned
+        S->>DB: Incrémenter stockEmprunt
+        S-->>U: Retour confirmé
+    else Stock indisponible
+        DB-->>S: Stock = 0
+        S-->>U: Proposer réservation
+        U->>S: Confirmer réservation
+        S->>DB: Créer BookReservation
+        S->>DB: Calculer position dans file
+        S-->>U: Réservation confirmée (position X)
+    end
+```
+\end{verbatim}
+
+\subsection{Diagramme de Séquence - Processus d'Achat}
+
+\begin{verbatim}
+```mermaid
+sequenceDiagram
+    participant U as Utilisateur
+    participant C as CartController
+    participant CH as CheckoutController
+    participant ST as StripeService
+    participant DB as Base de données
+    participant E as EmailService
+    
+    U->>C: Ajouter au panier
+    C->>DB: Vérifier stockVente > 0
+    DB-->>C: Stock vérifié
+    C->>DB: Créer/Mettre à jour CartItem
+    C-->>U: Article ajouté
+    
+    U->>C: Voir le panier
+    C->>DB: Récupérer Cart + CartItems
+    C-->>U: Afficher panier
+    
+    U->>CH: Procéder au paiement
+    CH->>DB: Valider les stocks
+    CH->>ST: Créer PaymentIntent
+    ST-->>CH: PaymentIntent ID
+    CH-->>U: Afficher formulaire Stripe
+    
+    U->>ST: Soumettre le paiement
+    ST-->>CH: Paiement confirmé
+    
+    CH->>DB: Créer Order (status: paid)
+    CH->>DB: Créer OrderItems
+    CH->>DB: Décrémenter stockVente pour chaque livre
+    CH->>DB: Vider le panier
+    CH->>E: Envoyer confirmation
+    E-->>U: Email de confirmation
+    CH-->>U: Commande confirmée
+```
+\end{verbatim}
+
+\section{Architecture Technique}
+
+\subsection{Architecture MVC}
+
+L'application suit strictement le pattern Modèle-Vue-Contrôleur de Symfony :
+
+\begin{itemize}
+    \item \textbf{Couche Modèle (Entity)} : 18 entités Doctrine représentant les données
+    \item \textbf{Couche Vue (Templates)} : Templates Twig pour le rendu HTML
+    \item \textbf{Couche Contrôleur} : 35+ contrôleurs gérant la logique métier
+    \item \textbf{Couche Service} : 7 services pour la logique réutilisable
+    \item \textbf{Couche Repository} : Requêtes Doctrine personnalisées
+\end{itemize}
+
+\subsection{Diagramme d'Architecture}
+
+\begin{verbatim}
+```mermaid
+graph TB
+    subgraph "Frontend"
+        B[Bootstrap 4]
+        JS[JavaScript/jQuery]
+        FC[FullCalendar.js]
+        TU[Turbo/Hotwire]
+    end
+    
+    subgraph "Symfony Application"
+        subgraph "Controllers"
+            PC[Public Controllers]
+            UC[User Controllers]
+            AC[Admin Controllers]
+            API[API Controllers]
+        end
+        
+        subgraph "Services"
+            ES[EmailService]
+            SS[StripePaymentService]
+            AL[ActivityLogger]
+            RS[ReadingStreakService]
+            GS[GoalAchievementService]
+            BR[BookRecommendationService]
+        end
+        
+        subgraph "Security"
+            AUTH[Authentication]
+            AUTHZ[Authorization]
+            CSRF[CSRF Protection]
+        end
+    end
+    
+    subgraph "Data Layer"
+        ORM[Doctrine ORM]
+        DB[(MySQL Database)]
+        REPO[Repositories]
+    end
+    
+    subgraph "External Services"
+        STRIPE[Stripe API]
+        SMTP[SMTP Server]
+    end
+    
+    B --> PC
+    JS --> API
+    FC --> UC
+    TU --> PC
+    
+    PC --> ES
+    UC --> SS
+    AC --> AL
+    
+    PC --> ORM
+    UC --> ORM
+    AC --> ORM
+    
+    ORM --> DB
+    REPO --> ORM
+    
+    SS --> STRIPE
+    ES --> SMTP
+```
+\end{verbatim}
+
+\subsection{Technologies Implémentées}
+
+\subsubsection{Backend - Symfony 7}
+\begin{itemize}
+    \item Symfony 7.3 : Framework web principal
+    \item PHP 8.2+ : Langage de programmation moderne avec types stricts
+    \item Doctrine ORM 3.x : Couche d'accès base de données
+    \item EasyAdmin 4.x : Générateur d'interface d'administration
+    \item Symfony Security : Authentification et autorisation
+    \item Symfony Mailer : Service d'envoi d'emails
+    \item Symfony Form : Gestion des formulaires
+    \item Symfony Validator : Validation des données
+    \item KnpPaginatorBundle : Pagination des listes
+    \item Stripe PHP SDK : Intégration paiements
+\end{itemize}
+
+\subsubsection{Frontend - Interface Utilisateur}
+\begin{itemize}
+    \item Twig 3.x : Moteur de templates
+    \item Bootstrap 4.x : Framework CSS responsive
+    \item jQuery 3.x : Bibliothèque JavaScript
+    \item FullCalendar.js 6.x : Calendrier interactif
+    \item Font Awesome 5.x : Bibliothèque d'icônes
+    \item SB Admin 2 : Template de dashboard admin
+    \item Turbo/Hotwire : Navigation SPA-like sans rechargement complet
+    \item Stimulus : Contrôleurs JavaScript modulaires
+\end{itemize}
+
+\subsubsection{Base de Données}
+\begin{itemize}
+    \item MySQL/MariaDB : Système de gestion de base de données
+    \item 25 migrations Doctrine : Gestion évolutive du schéma
+    \item 18 entités : Modèle de données complet
+    \item Relations complexes : OneToMany, ManyToMany, ManyToOne
+\end{itemize}
+
+\section{Modèle de Données}
+
+\subsection{Diagramme Entité-Relation}
+
+\begin{verbatim}
+```mermaid
+erDiagram
+    USER ||--o{ LOAN : requests
+    USER ||--o{ BOOK_RESERVATION : makes
+    USER ||--o{ CART : owns
+    USER ||--o{ ORDER : places
+    USER ||--o{ REVIEW : writes
+    USER ||--o{ MESSAGE : sends
+    USER ||--o{ MESSAGE : receives
+    USER ||--o{ READING_PROGRESS : tracks
+    USER ||--o{ READING_GOAL : sets
+    USER ||--o{ ACTIVITY_LOG : generates
+    USER }o--o{ LIVRE : wishlist
+    USER }o--o{ LIVRE : ownedBooks
+    USER }o--o{ AUTEUR : favoriteAuthors
+    
+    LIVRE ||--o{ LOAN : "is borrowed"
+    LIVRE ||--o{ BOOK_RESERVATION : "is reserved"
+    LIVRE ||--o{ CART_ITEM : "is in"
+    LIVRE ||--o{ ORDER_ITEM : "is ordered"
+    LIVRE ||--o{ REVIEW : receives
+    LIVRE ||--o{ READING_PROGRESS : tracked
+    LIVRE }o--|| AUTEUR : "written by"
+    LIVRE }o--|| CATEGORIE : "belongs to"
+    LIVRE }o--|| EDITEUR : "published by"
+    
+    CART ||--o{ CART_ITEM : contains
+    ORDER ||--o{ ORDER_ITEM : contains
+    
+    BANNER ||--o{ USER_BANNER_PREFERENCE : "has preferences"
+    USER ||--o{ USER_BANNER_PREFERENCE : "sets preferences"
+    
+    USER {
+        int id PK
+        string email UK
+        string username
+        string password
+        json roles
+        boolean isVerified
+        string profilePicture
+        string firstName
+        string lastName
+        datetime lastLogin
+    }
+    
+    LIVRE {
+        int id PK
+        string titre
+        bigint isbn
+        int nbPages
+        float prix
+        int stockVente
+        int stockEmprunt
+        int nbExemplaires
+        string image
+        string pdf
+        boolean isBorrowable
+        date dateEdition
+    }
+    
+    LOAN {
+        int id PK
+        int user_id FK
+        int livre_id FK
+        string status
+        datetime requestedAt
+        datetime approvedAt
+        datetime dueDate
+        datetime returnedAt
+        text notes
+    }
+    
+    BOOK_RESERVATION {
+        int id PK
+        int user_id FK
+        int livre_id FK
+        int position
+        boolean isActive
+        datetime requestedAt
+        datetime notifiedAt
+    }
+    
+    ORDER {
+        int id PK
+        int user_id FK
+        string orderNumber UK
+        string status
+        decimal totalAmount
+        string paymentMethod
+        string stripePaymentIntentId
+        json shippingAddress
+        json billingAddress
+    }
+    
+    REVIEW {
+        int id PK
+        int user_id FK
+        int livre_id FK
+        int rating
+        text comment
+        boolean verified
+        int helpful
+    }
+```
+\end{verbatim}
+
+\subsection{Entités Principales}
+
+\begin{table}[H]
+\centering
+\caption{Liste des 18 Entités du Système}
+\begin{tabular}{|l|l|p{6cm}|}
+\hline
+\textbf{Entité} & \textbf{Table} & \textbf{Description} \\
+\hline
+User & user & Utilisateurs avec rôles et profils \\
+\hline
+Livre & livre & Livres avec double stock (vente/emprunt) \\
+\hline
+Auteur & auteur & Auteurs avec biographie \\
+\hline
+Categorie & categorie & Catégories de livres \\
+\hline
+Editeur & editeur & Éditeurs/Maisons d'édition \\
+\hline
+Loan & loans & Prêts avec workflow de statuts \\
+\hline
+BookReservation & book\_reservations & Réservations avec position file \\
+\hline
+Cart & carts & Paniers d'achat utilisateurs \\
+\hline
+CartItem & cart\_item & Articles du panier \\
+\hline
+Order & orders & Commandes avec paiement \\
+\hline
+OrderItem & order\_item & Lignes de commande \\
+\hline
+Review & review & Avis et notes des livres \\
+\hline
+Message & message & Messages internes \\
+\hline
+ReadingProgress & reading\_progress & Progression de lecture \\
+\hline
+ReadingGoal & reading\_goal & Objectifs de lecture \\
+\hline
+Banner & banner & Bannières promotionnelles \\
+\hline
+ActivityLog & activity\_log & Journal d'activité \\
+\hline
+UserBannerPreference & user\_banner\_pref & Préférences bannières \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Système de Stock Double}
+
+Une innovation majeure du projet est la séparation du stock en deux catégories distinctes :
+
+\begin{lstlisting}[language=PHP, caption=Entité Livre - Champs de Stock]
+#[ORM\Column(type: 'integer', options: ['default' => 0])]
+private int $stockVente = 0;
+
+#[ORM\Column(type: 'integer', options: ['default' => 0])]
+private int $stockEmprunt = 0;
+
+public function getTotalStock(): int
+{
+    return $this->stockVente + $this->stockEmprunt;
+}
+
+public function isAvailableForSale(): bool
+{
+    return $this->stockVente > 0;
+}
+
+public function getAvailableLoanCopies(): int
+{
+    $activeLoans = $this->loans->filter(
+        fn($loan) => in_array($loan->getStatus(), 
+            ['requested', 'approved', 'active'])
+    )->count();
+    return max(0, $this->stockEmprunt - $activeLoans);
+}
+\end{lstlisting}
+
+\textbf{Avantages du système :}
+\begin{itemize}
+    \item Gestion indépendante des stocks vente et emprunt
+    \item Pas de conflit entre achats et emprunts
+    \item Calcul automatique du total des exemplaires
+    \item Validation précise de la disponibilité par type d'opération
+\end{itemize}
+
+\section{Fonctionnalités Implémentées}
+
+\subsection{Gestion des Utilisateurs et Authentification}
+
+\subsubsection{Système d'Inscription et Connexion}
+\begin{itemize}
+    \item Inscription avec validation des données
+    \item Confirmation par email avec token sécurisé
+    \item Connexion sécurisée avec gestion des sessions
+    \item Récupération de mot de passe par email
+    \item Système de rôles (ROLE\_USER, ROLE\_ADMIN)
+    \item Hiérarchie de rôles configurée
+\end{itemize}
+
+\subsubsection{Gestion des Profils}
+\begin{itemize}
+    \item Modification des informations personnelles
+    \item Upload d'avatar utilisateur
+    \item Gestion des adresses (facturation/livraison)
+    \item Liste de souhaits (wishlist)
+    \item Livres possédés
+    \item Auteurs favoris
+\end{itemize}
+
+\subsection{Gestion du Catalogue de Livres}
+
+\subsubsection{Recherche et Filtrage}
+\begin{itemize}
+    \item Recherche full-text par mots-clés
+    \item Filtrage par auteur, catégorie, éditeur
+    \item Tri par date, prix, titre
+    \item Pagination des résultats avec KnpPaginator
+    \item Autocomplétion AJAX pour la recherche
+\end{itemize}
+
+\subsubsection{Gestion des Livres (Admin)}
+\begin{itemize}
+    \item CRUD complet via EasyAdmin
+    \item Upload d'images de couverture
+    \item Upload de fichiers PDF
+    \item Gestion du double stock (vente/emprunt)
+    \item Association avec auteur, catégorie, éditeur
+    \item Drapeau "empruntable" pour contrôler les prêts
+\end{itemize}
+
+\subsection{Système de Prêt}
+
+\subsubsection{Workflow de Prêt}
+\begin{enumerate}
+    \item \textbf{Demande (requested)} : L'utilisateur demande un emprunt
+    \item \textbf{Approbation (approved)} : L'admin approuve la demande
+    \item \textbf{Actif (active)} : Le livre est en cours d'emprunt
+    \item \textbf{Retourné (returned)} : Le livre est rendu
+    \item \textbf{En retard (overdue)} : Dépassement de la date d'échéance
+    \item \textbf{Annulé (cancelled)} : Demande annulée
+\end{enumerate}
+
+\begin{verbatim}
+```mermaid
+stateDiagram-v2
+    [*] --> requested : Demande d'emprunt
+    requested --> approved : Admin approuve
+    requested --> cancelled : Admin refuse / User annule
+    approved --> active : Livre remis
+    active --> returned : Livre retourné
+    active --> overdue : Date dépassée
+    overdue --> returned : Livre retourné (retard)
+    returned --> [*]
+    cancelled --> [*]
+```
+\end{verbatim}
+
+\subsubsection{Fonctionnalités du Prêt}
+\begin{itemize}
+    \item Période de prêt automatique de 14 jours
+    \item Calcul automatique de la date d'échéance
+    \item Validation du stock d'emprunt disponible
+    \item Historique complet des prêts
+    \item Notes et commentaires sur les prêts
+    \item Commande de rappel pour livres en retard
+\end{itemize}
+
+\subsection{Système de Réservation}
+
+\subsubsection{File d'Attente}
+\begin{itemize}
+    \item Création de réservation quand stock emprunt = 0
+    \item Attribution automatique de position dans la file
+    \item Notification quand le livre devient disponible
+    \item Conversion automatique en prêt possible
+    \item Calendrier de disponibilité avec dates estimées
+\end{itemize}
+
+\subsubsection{Calendrier de Disponibilité}
+\begin{itemize}
+    \item Intégration FullCalendar.js
+    \item Affichage des emprunts actifs
+    \item Dates de retour prévues
+    \item Compatible avec Turbo/Hotwire
+    \item Mise à jour en temps réel
+\end{itemize}
+
+\subsection{Module E-Commerce}
+
+\subsubsection{Panier d'Achat}
+\begin{itemize}
+    \item Ajout/suppression de produits
+    \item Mise à jour des quantités
+    \item Validation automatique contre stockVente
+    \item Calcul automatique des totaux
+    \item Persistance en base de données
+\end{itemize}
+
+\subsubsection{Processus de Commande}
+\begin{itemize}
+    \item Validation du stock disponible
+    \item Saisie des adresses de livraison/facturation
+    \item Sélection du mode de paiement
+    \item Intégration Stripe pour paiement sécurisé
+    \item Génération de numéro de commande unique
+    \item Email de confirmation automatique
+    \item Mise à jour du stockVente après paiement
+\end{itemize}
+
+\subsubsection{Statuts de Commande}
+\begin{verbatim}
+```mermaid
+stateDiagram-v2
+    [*] --> pending : Commande créée
+    pending --> paid : Paiement confirmé
+    pending --> cancelled : Annulation
+    paid --> processing : En préparation
+    processing --> shipped : Expédiée
+    processing --> cancelled : Annulation
+    shipped --> delivered : Livrée
+    delivered --> refunded : Remboursement
+    delivered --> [*]
+    cancelled --> [*]
+    refunded --> [*]
+```
+\end{verbatim}
+
+\subsection{Système d'Avis et Notes}
+
+\begin{itemize}
+    \item Notes de 1 à 5 étoiles
+    \item Commentaires textuels optionnels
+    \item Upload d'images dans les avis
+    \item Badge "Achat vérifié"
+    \item Votes "Utile" par la communauté
+    \item Modération par l'administrateur
+\end{itemize}
+
+\subsection{Suivi de Progression de Lecture}
+
+\begin{itemize}
+    \item Pourcentage de progression par livre
+    \item Page courante enregistrée
+    \item Système de signets avec notes
+    \item Statut de complétion automatique
+    \item Historique de lecture (lastReadAt)
+\end{itemize}
+
+\subsection{Objectifs de Lecture}
+
+\begin{itemize}
+    \item Types d'objectifs : livres/an, pages/mois, personnalisé
+    \item Valeur cible vs valeur actuelle
+    \item Dates de début et fin
+    \item Pourcentage de progression calculé
+    \item Notifications d'accomplissement
+\end{itemize}
+
+\subsection{Messagerie Interne}
+
+\begin{itemize}
+    \item Communication utilisateur à utilisateur
+    \item Statut de lecture avec horodatage
+    \item Compteur de messages non lus (AJAX)
+    \item Affichage du temps relatif en français
+    \item Boîte de réception et messages envoyés
+\end{itemize}
+
+\subsection{Système de Bannières}
+
+\begin{itemize}
+    \item Types : promotion, announcement, warning, info
+    \item Positions : top, bottom, sidebar, popup
+    \item Planification avec dates de début/fin
+    \item Ciblage par rôle utilisateur
+    \item Style personnalisé (couleurs, CSS)
+    \item Option "fermer" avec mémorisation
+\end{itemize}
+
+\subsection{Double Interface d'Administration}
+
+\subsubsection{EasyAdmin 4 (/admin)}
+\begin{itemize}
+    \item CRUD automatique pour les 18 entités
+    \item Dashboard avec statistiques
+    \item Filtres et recherche avancée
+    \item Actions par lot
+    \item Export de données
+\end{itemize}
+
+\subsubsection{SB Admin 2 Personnalisé (/backoffice)}
+\begin{itemize}
+    \item Tableaux de bord visuels
+    \item Graphiques et charts
+    \item Gestion des prêts avec workflow
+    \item Gestion des réservations avec file d'attente
+    \item Statistiques avancées
+\end{itemize}
+
+\section{Structure du Projet}
+
+\subsection{Arborescence des Fichiers}
+
+\begin{lstlisting}[language=bash, caption=Structure du Projet]
+biblio/
+|-- assets/                    # Assets frontend
+|   |-- app.js                 # JavaScript principal
+|   |-- styles/                # Fichiers CSS/SCSS
+|   |-- controllers/           # Controleurs Stimulus
+|-- bin/
+|   |-- console                # Console Symfony
+|-- config/
+|   |-- packages/              # Configuration bundles
+|   |-- routes/                # Configuration routes
+|   |-- services.yaml          # Services DI
+|-- migrations/                # 25 migrations Doctrine
+|-- public/
+|   |-- index.php              # Point d'entree
+|   |-- uploads/               # Fichiers uploades
+|-- src/
+|   |-- Command/               # Commandes console
+|   |-- Controller/            # 35+ controleurs
+|   |   |-- Admin/             # 20 CRUD EasyAdmin
+|   |-- DataFixtures/          # Donnees de test
+|   |-- Entity/                # 18 entites
+|   |-- EventListener/         # Listeners
+|   |-- EventSubscriber/       # Subscribers
+|   |-- Form/                  # Types de formulaires
+|   |-- Repository/            # Repositories Doctrine
+|   |-- Security/              # Composants securite
+|   |-- Service/               # 7 services metier
+|-- templates/                 # Templates Twig
+|   |-- admin/                 # Templates admin
+|   |-- borrowing/             # Templates emprunt
+|   |-- reservation/           # Templates reservation
+|   |-- emails/                # Templates emails
+|-- tests/                     # Tests unitaires
+|-- translations/              # Fichiers i18n
+\end{lstlisting}
+
+\subsection{Contrôleurs Principaux}
+
+\begin{table}[H]
+\centering
+\caption{Liste des Contrôleurs}
+\begin{tabular}{|l|p{8cm}|}
+\hline
+\textbf{Contrôleur} & \textbf{Responsabilité} \\
+\hline
+LivreController & Catalogue et détails des livres \\
+\hline
+BorrowingController & Demandes d'emprunt, calendrier \\
+\hline
+ReservationController & Réservations utilisateur \\
+\hline
+CartController & Gestion du panier \\
+\hline
+CheckoutController & Processus de paiement \\
+\hline
+OrderController & Historique des commandes \\
+\hline
+LoanManagementController & Admin: gestion des prêts \\
+\hline
+ReservationManagementController & Admin: gestion des réservations \\
+\hline
+MessageController & Messagerie interne \\
+\hline
+ProfileController & Profil utilisateur \\
+\hline
+ReadingProgressController & Suivi de lecture \\
+\hline
+ReviewController & Avis et notes \\
+\hline
+SearchController & Recherche et autocomplétion \\
+\hline
+SecurityController & Login/Logout \\
+\hline
+RegistrationController & Inscription \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Services Métier}
+
+\begin{table}[H]
+\centering
+\caption{Services Applicatifs}
+\begin{tabular}{|l|p{8cm}|}
+\hline
+\textbf{Service} & \textbf{Fonction} \\
+\hline
+EmailService & Envoi d'emails (vérification, notifications, etc.) \\
+\hline
+StripePaymentService & Traitement des paiements Stripe \\
+\hline
+ActivityLogger & Journalisation des actions utilisateur \\
+\hline
+BookRecommendationService & Recommandations de livres \\
+\hline
+ReadingStreakService & Calcul des séries de lecture \\
+\hline
+GoalAchievementService & Suivi des objectifs de lecture \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Migrations de Base de Données}
+
+\subsection{Liste des Migrations}
+
+Le projet contient 25 migrations Doctrine, documentant l'évolution du schéma :
+
+\begin{table}[H]
+\centering
+\caption{Migrations Principales}
+\begin{tabular}{|l|p{8cm}|}
+\hline
+\textbf{Migration} & \textbf{Description} \\
+\hline
+Version20251020135839 & Schéma initial (User, Livre, etc.) \\
+\hline
+Version20251109091325 & Ajout du système de prêt (Loan) \\
+\hline
+Version20251116090619 & Ajout des réservations \\
+\hline
+Version20251117072736 & Système de panier et commandes \\
+\hline
+Version20251128154844 & Système de bannières \\
+\hline
+Version20251203003629 & Progression de lecture \\
+\hline
+Version20251205120542 & Ajout stockVente, stockEmprunt \\
+\hline
+Version20251205124757 & Migration des données de stock \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Migration du Stock Double}
+
+\begin{lstlisting}[language=PHP, caption=Migration pour le Stock Double]
+public function up(Schema $schema): void
+{
+    $this->addSql('ALTER TABLE livre ADD stock_vente INT 
+        DEFAULT 0 NOT NULL');
+    $this->addSql('ALTER TABLE livre ADD stock_emprunt INT 
+        DEFAULT 0 NOT NULL');
+    
+    // Migration des donnees existantes
+    $this->addSql('UPDATE livre SET 
+        stock_vente = FLOOR(nb_exemplaires / 2),
+        stock_emprunt = CEIL(nb_exemplaires / 2)
+        WHERE nb_exemplaires > 0');
+}
+\end{lstlisting}
+
+\section{Tests et Validation}
+
+\subsection{Cas de Test - Système de Prêt}
+
+\begin{table}[H]
+\centering
+\caption{Tests du Workflow de Prêt}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Cas} & \textbf{Résultat Attendu} & \textbf{Statut} \\
+\hline
+Demande avec stock OK & Loan créé (requested) & \checkmark \\
+Demande sans stock & Proposition réservation & \checkmark \\
+Approbation admin & Status: approved, stock-- & \checkmark \\
+Retour de livre & Status: returned, stock++ & \checkmark \\
+Détection retard & Status: overdue & \checkmark \\
+Annulation & Status: cancelled & \checkmark \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Cas de Test - E-Commerce}
+
+\begin{table}[H]
+\centering
+\caption{Tests du Processus d'Achat}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Cas} & \textbf{Résultat Attendu} & \textbf{Statut} \\
+\hline
+Ajout au panier (stock OK) & CartItem créé & \checkmark \\
+Ajout au panier (stock 0) & Message d'erreur & \checkmark \\
+Paiement Stripe valide & Order créé, stock-- & \checkmark \\
+Paiement échoué & Panier conservé & \checkmark \\
+Email confirmation & Email envoyé & \checkmark \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Cas de Test - Stock Double}
+
+\begin{table}[H]
+\centering
+\caption{Tests du Système de Stock}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Cas} & \textbf{Résultat Attendu} & \textbf{Statut} \\
+\hline
+Achat utilise stockVente & stockVente décrémenté & \checkmark \\
+Emprunt utilise stockEmprunt & stockEmprunt décrémenté & \checkmark \\
+Total calculé correctement & nbExemplaires = somme & \checkmark \\
+Formulaire admin valide & Deux champs distincts & \checkmark \\
+Affichage template & Format V:X | E:Y & \checkmark \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Interface Utilisateur}
+
+\subsection{Design Responsive}
+
+L'application utilise Bootstrap 4 pour un design entièrement responsive :
+
+\begin{itemize}
+    \item \textbf{Desktop} : Layout complet avec sidebar admin
+    \item \textbf{Tablette} : Navigation adaptée, menu hamburger
+    \item \textbf{Mobile} : Interface optimisée tactile
+\end{itemize}
+
+\subsection{Composants Clés}
+
+\subsubsection{Barre de Navigation}
+\begin{itemize}
+    \item Logo et branding
+    \item Menu de navigation responsive
+    \item Barre de recherche globale
+    \item Compteur de panier dynamique
+    \item Badge messages non lus
+    \item Menu utilisateur dropdown
+\end{itemize}
+
+\subsubsection{Catalogue de Livres}
+\begin{itemize}
+    \item Cartes avec images de couverture
+    \item Affichage du prix et des stocks (V:X | E:Y)
+    \item Boutons d'action (Acheter, Emprunter, Réserver)
+    \item Badges de disponibilité
+    \item Pagination intuitive
+\end{itemize}
+
+\subsubsection{Calendrier de Disponibilité}
+\begin{itemize}
+    \item Vue mensuelle FullCalendar
+    \item Événements colorés par statut
+    \item Dates de retour prévues
+    \item Navigation mois précédent/suivant
+\end{itemize}
+
+\section{Sécurité}
+
+\subsection{Authentification}
+\begin{itemize}
+    \item Hashage bcrypt/argon2 des mots de passe
+    \item Tokens de vérification email sécurisés
+    \item Tokens de réinitialisation avec expiration
+    \item Protection contre la fixation de session
+\end{itemize}
+
+\subsection{Autorisation}
+\begin{itemize}
+    \item Contrôle d'accès RBAC (ROLE\_USER, ROLE\_ADMIN)
+    \item Annotations IsGranted sur les contrôleurs
+    \item Hiérarchie de rôles configurée
+    \item Protection CSRF sur tous les formulaires
+\end{itemize}
+
+\subsection{Protection des Données}
+\begin{itemize}
+    \item Requêtes préparées (injection SQL)
+    \item Échappement Twig automatique (XSS)
+    \item Validation des uploads de fichiers
+    \item Sanitation des entrées utilisateur
+\end{itemize}
+
+\section{Conclusion et Perspectives}
+
+\subsection{Bilan du Projet}
+
+Biblio représente une réalisation complète d'un système de gestion de bibliothèque moderne. Le projet démontre la maîtrise approfondie du framework Symfony et des technologies web contemporaines.
+
+\subsection{Points Forts}
+
+\begin{itemize}
+    \item \textbf{Architecture Robuste} : Symfony 7, MVC strict, services métier
+    \item \textbf{Modèle de Données Complet} : 18 entités avec relations complexes
+    \item \textbf{Workflow de Prêt Complet} : Du demande au retour avec tous les cas
+    \item \textbf{Stock Intelligent} : Séparation vente/emprunt innovante
+    \item \textbf{Double Admin} : EasyAdmin + Dashboard personnalisé
+    \item \textbf{E-Commerce Fonctionnel} : Panier, paiement Stripe, commandes
+    \item \textbf{UX Moderne} : Responsive, calendrier interactif, temps réel
+\end{itemize}
+
+\subsection{Difficultés Rencontrées}
+
+\begin{itemize}
+    \item Configuration de l'intégration Stripe
+    \item Gestion des relations ManyToMany complexes
+    \item Compatibilité Turbo/Hotwire avec JavaScript tiers (FullCalendar)
+    \item Migration des données existantes lors du changement de schéma
+    \item Optimisation des requêtes Doctrine pour les listes paginées
+\end{itemize}
+
+\subsection{Compétences Acquises}
+
+\begin{itemize}
+    \item Développement web avancé avec Symfony 7
+    \item Conception de bases de données relationnelles
+    \item Intégration de services de paiement
+    \item Gestion de workflows complexes (state machine)
+    \item Création d'interfaces admin personnalisées
+    \item Tests et validation de fonctionnalités
+\end{itemize}
+
+\subsection{Évolutions Possibles}
+
+\begin{itemize}
+    \item Application mobile avec API REST
+    \item Système de recommandation par IA
+    \item Notifications push temps réel
+    \item Lecteur PDF intégré
+    \item Statistiques avancées avec graphiques
+    \item Support multilingue complet
+    \item Pénalités automatiques pour retards
+\end{itemize}
+
+\newpage
+\section{Annexes}
+
+\subsection{Diagramme de Classes Complet}
+
+\begin{verbatim}
+```mermaid
+classDiagram
+    class User {
+        +int id
+        +string email
+        +string username
+        +string password
+        +array roles
+        +bool isVerified
+        +bool isActive
+        +string profilePicture
+        +string firstName
+        +string lastName
+        +string phone
+        +array billingAddress
+        +array shippingAddress
+        +datetime lastLogin
+        +getRoles()
+        +isAdmin()
+        +getFullName()
+    }
+    
+    class Livre {
+        +int id
+        +string titre
+        +bigint isbn
+        +int nbPages
+        +float prix
+        +int stockVente
+        +int stockEmprunt
+        +int nbExemplaires
+        +string image
+        +string pdf
+        +bool isBorrowable
+        +date dateEdition
+        +getTotalStock()
+        +isAvailableForSale()
+        +isAvailableForBorrowing()
+        +getAvailableLoanCopies()
+    }
+    
+    class Auteur {
+        +int id
+        +string nom
+        +string prenom
+        +text biographie
+        +string photo
+        +getFullName()
+    }
+    
+    class Categorie {
+        +int id
+        +string nom
+        +text description
+        +string image
+    }
+    
+    class Editeur {
+        +int id
+        +string nom
+        +string adresse
+        +string email
+        +string telephone
+    }
+    
+    class Loan {
+        +int id
+        +string status
+        +datetime requestedAt
+        +datetime approvedAt
+        +datetime loanStartDate
+        +datetime dueDate
+        +datetime returnedAt
+        +text notes
+        +isOverdue()
+        +getDaysRemaining()
+        +getStatusLabel()
+    }
+    
+    class BookReservation {
+        +int id
+        +int position
+        +bool isActive
+        +datetime requestedAt
+        +datetime notifiedAt
+        +datetime expectedAvailableDate
+        +getWaitTime()
+    }
+    
+    class Cart {
+        +int id
+        +datetime createdAt
+        +datetime updatedAt
+        +getTotal()
+        +getItemCount()
+        +isEmpty()
+    }
+    
+    class CartItem {
+        +int id
+        +int quantity
+        +getSubtotal()
+        +isAvailable()
+    }
+    
+    class Order {
+        +int id
+        +string orderNumber
+        +string status
+        +decimal totalAmount
+        +string currency
+        +string paymentMethod
+        +string stripePaymentIntentId
+        +array shippingAddress
+        +array billingAddress
+        +text notes
+        +datetime paidAt
+        +datetime shippedAt
+        +datetime deliveredAt
+        +generateOrderNumber()
+        +getStatusLabel()
+    }
+    
+    class OrderItem {
+        +int id
+        +int quantity
+        +decimal price
+        +getSubtotal()
+    }
+    
+    class Review {
+        +int id
+        +int rating
+        +text comment
+        +array images
+        +bool verified
+        +int helpful
+        +getStars()
+    }
+    
+    class Message {
+        +int id
+        +string subject
+        +text content
+        +bool isRead
+        +datetime readAt
+        +datetime createdAt
+        +markAsRead()
+    }
+    
+    class ReadingProgress {
+        +int id
+        +int progressPercentage
+        +int currentPage
+        +array bookmarks
+        +bool isCompleted
+        +datetime lastReadAt
+        +updateProgress()
+    }
+    
+    class ReadingGoal {
+        +int id
+        +string goalType
+        +int targetValue
+        +int currentValue
+        +date startDate
+        +date endDate
+        +getProgressPercentage()
+        +isAchieved()
+    }
+    
+    class Banner {
+        +int id
+        +string title
+        +text content
+        +string type
+        +string position
+        +string status
+        +datetime startDate
+        +datetime endDate
+        +int priority
+        +bool isDismissible
+        +array customStyles
+        +string targetAudience
+        +isActive()
+    }
+    
+    class ActivityLog {
+        +int id
+        +string action
+        +text description
+        +array metadata
+        +string ipAddress
+        +string userAgent
+        +datetime createdAt
+    }
+    
+    User "1" --> "*" Loan : requests
+    User "1" --> "*" BookReservation : makes
+    User "1" --> "*" Cart : owns
+    User "1" --> "*" Order : places
+    User "1" --> "*" Review : writes
+    User "1" --> "*" Message : sends
+    User "1" --> "*" ReadingProgress : tracks
+    User "1" --> "*" ReadingGoal : sets
+    User "1" --> "*" ActivityLog : generates
+    User "*" --> "*" Livre : wishlist
+    User "*" --> "*" Auteur : favorites
+    
+    Livre "1" --> "*" Loan : borrowed
+    Livre "1" --> "*" BookReservation : reserved
+    Livre "1" --> "*" CartItem : inCart
+    Livre "1" --> "*" OrderItem : ordered
+    Livre "1" --> "*" Review : reviewed
+    Livre "1" --> "*" ReadingProgress : tracked
+    Livre "*" --> "1" Auteur : writtenBy
+    Livre "*" --> "1" Categorie : belongsTo
+    Livre "*" --> "1" Editeur : publishedBy
+    
+    Cart "1" --> "*" CartItem : contains
+    Order "1" --> "*" OrderItem : contains
+    
+    Loan "*" --> "1" User : approvedBy
+```
+\end{verbatim}
+
+\subsection{Diagramme de Déploiement}
+
+\begin{verbatim}
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        WB[Web Browser]
+        MB[Mobile Browser]
+    end
+    
+    subgraph "Presentation Layer"
+        NG[Nginx/Apache Web Server]
+        PF[PHP-FPM 8.2+]
+    end
+    
+    subgraph "Application Layer - Symfony 7"
+        KC[Kernel & Controllers]
+        SV[Services Layer]
+        EV[Event System]
+        SEC[Security Component]
+    end
+    
+    subgraph "Data Access Layer"
+        DOC[Doctrine ORM]
+        REP[Repositories]
+        MIG[Migrations]
+    end
+    
+    subgraph "Storage Layer"
+        DB[(MySQL/MariaDB Database)]
+        FS[File System - Uploads]
+        CACHE[Symfony Cache]
+    end
+    
+    subgraph "External Services"
+        STRIPE[Stripe Payment API]
+        SMTP[SMTP Email Server]
+        CDN[CDN - Static Assets]
+    end
+    
+    WB --> NG
+    MB --> NG
+    NG --> PF
+    PF --> KC
+    KC --> SV
+    KC --> SEC
+    SV --> EV
+    SV --> DOC
+    DOC --> REP
+    REP --> DB
+    DOC --> MIG
+    MIG --> DB
+    KC --> FS
+    KC --> CACHE
+    SV --> STRIPE
+    SV --> SMTP
+    NG --> CDN
+```
+\end{verbatim}
+
+\subsection{Diagramme d'Activité - Emprunt de Livre}
+
+\begin{verbatim}
+```mermaid
+flowchart TD
+    A[Utilisateur consulte un livre] --> B{Livre empruntable?}
+    B -->|Non| C[Afficher message: Non disponible à l'emprunt]
+    B -->|Oui| D{Stock emprunt > 0?}
+    
+    D -->|Oui| E{Déjà un prêt actif?}
+    E -->|Oui| F[Afficher: Vous avez déjà ce livre]
+    E -->|Non| G[Afficher formulaire de demande]
+    G --> H[Utilisateur soumet la demande]
+    H --> I[Créer Loan status=requested]
+    I --> J[Notifier administrateur]
+    J --> K[Attendre approbation]
+    
+    D -->|Non| L{Déjà une réservation?}
+    L -->|Oui| M[Afficher position dans la file]
+    L -->|Non| N[Proposer réservation]
+    N --> O[Utilisateur confirme]
+    O --> P[Créer BookReservation]
+    P --> Q[Calculer position]
+    Q --> R[Afficher confirmation avec position]
+    
+    K --> S{Admin décision}
+    S -->|Approuve| T[Status = approved]
+    T --> U[Décrémenter stockEmprunt]
+    U --> V[Calculer dueDate +14j]
+    V --> W[Notifier utilisateur]
+    W --> X[Status = active]
+    
+    S -->|Refuse| Y[Status = cancelled]
+    Y --> Z[Notifier utilisateur avec raison]
+    
+    X --> AA{Livre retourné?}
+    AA -->|Oui| AB[Status = returned]
+    AB --> AC[Incrémenter stockEmprunt]
+    AC --> AD{Réservations en attente?}
+    AD -->|Oui| AE[Notifier premier en file]
+    AD -->|Non| AF[Fin du processus]
+    
+    AA -->|Non| AG{Date dépassée?}
+    AG -->|Oui| AH[Status = overdue]
+    AH --> AI[Envoyer rappel]
+    AG -->|Non| AA
+```
+\end{verbatim}
+
+\subsection{Diagramme d'Activité - Processus d'Achat}
+
+\begin{verbatim}
+```mermaid
+flowchart TD
+    A[Utilisateur sur page livre] --> B{Connecté?}
+    B -->|Non| C[Rediriger vers login]
+    C --> B
+    B -->|Oui| D{Stock vente > 0?}
+    
+    D -->|Non| E[Bouton désactivé: Rupture de stock]
+    D -->|Oui| F[Cliquer Ajouter au panier]
+    F --> G{Article déjà dans panier?}
+    
+    G -->|Oui| H[Incrémenter quantité]
+    G -->|Non| I[Créer CartItem]
+    
+    H --> J[Mettre à jour panier]
+    I --> J
+    J --> K[Afficher confirmation]
+    
+    K --> L[Utilisateur va au panier]
+    L --> M[Afficher récapitulatif]
+    M --> N{Modifier quantités?}
+    
+    N -->|Oui| O[Valider contre stock]
+    O --> P{Stock suffisant?}
+    P -->|Non| Q[Afficher erreur]
+    P -->|Oui| M
+    
+    N -->|Non| R[Procéder au checkout]
+    R --> S[Vérifier tous les stocks]
+    S --> T{Tous disponibles?}
+    
+    T -->|Non| U[Afficher articles indisponibles]
+    T -->|Oui| V[Afficher formulaire paiement]
+    
+    V --> W{Méthode paiement?}
+    W -->|Stripe| X[Créer PaymentIntent]
+    X --> Y[Afficher formulaire carte]
+    Y --> Z[Soumettre paiement]
+    Z --> AA{Paiement réussi?}
+    
+    AA -->|Non| AB[Afficher erreur Stripe]
+    AB --> V
+    
+    AA -->|Oui| AC[Créer Order status=paid]
+    
+    W -->|Autre| AD[Créer Order status=pending]
+    
+    AC --> AE[Créer OrderItems]
+    AD --> AE
+    AE --> AF[Décrémenter stockVente pour chaque livre]
+    AF --> AG[Vider le panier]
+    AG --> AH[Envoyer email confirmation]
+    AH --> AI[Afficher page succès]
+```
+\end{verbatim}
+
+\subsection{Diagramme de Composants}
+
+\begin{verbatim}
+```mermaid
+graph TB
+    subgraph "Frontend Components"
+        BASE[base.html.twig]
+        BACK[backendofficebase.html.twig]
+        NAV[Navigation Component]
+        SEARCH[Search Component]
+        CART_C[Cart Widget]
+        MSG_C[Message Badge]
+        CAL[FullCalendar Component]
+    end
+    
+    subgraph "Page Templates"
+        HOME[Landing Page]
+        CATALOG[Livre Catalog]
+        DETAIL[Book Detail]
+        BORROW[Borrowing Request]
+        RESERV[Reservation Calendar]
+        CART_P[Cart Page]
+        CHECK[Checkout Page]
+        PROFILE[Profile Page]
+        DASH[Dashboard]
+    end
+    
+    subgraph "Admin Templates"
+        EA_DASH[EasyAdmin Dashboard]
+        EA_CRUD[CRUD Pages]
+        LOAN_MGT[Loan Management]
+        RES_MGT[Reservation Management]
+        STATS[Statistics Page]
+    end
+    
+    subgraph "Email Templates"
+        VERIF[Verification Email]
+        WELCOME[Welcome Email]
+        RESET[Password Reset]
+        ORDER_CONF[Order Confirmation]
+        LOAN_APP[Loan Approved]
+        LOAN_REM[Loan Reminder]
+        RES_AVAIL[Reservation Available]
+    end
+    
+    BASE --> HOME
+    BASE --> CATALOG
+    BASE --> DETAIL
+    BASE --> BORROW
+    BASE --> RESERV
+    BASE --> CART_P
+    BASE --> CHECK
+    BASE --> PROFILE
+    
+    BACK --> DASH
+    BACK --> LOAN_MGT
+    BACK --> RES_MGT
+    BACK --> STATS
+    
+    NAV --> BASE
+    NAV --> BACK
+    SEARCH --> NAV
+    CART_C --> NAV
+    MSG_C --> NAV
+    
+    CAL --> BORROW
+    CAL --> RESERV
+```
+\end{verbatim}
+
+\subsection{Captures d'Écran - Description des Interfaces}
+
+\subsubsection{Page d'Accueil (Landing Page)}
+\begin{itemize}
+    \item \textbf{Hero Section} : Grande bannière avec message de bienvenue et bouton d'action principal
+    \item \textbf{Livres Populaires} : Carrousel des livres les plus empruntés/achetés
+    \item \textbf{Catégories} : Grille de catégories avec icônes et compteurs
+    \item \textbf{Nouveautés} : Section des derniers livres ajoutés
+    \item \textbf{Statistiques} : Compteurs animés (nombre de livres, utilisateurs, emprunts)
+    \item \textbf{Footer} : Liens rapides, réseaux sociaux, informations de contact
+\end{itemize}
+
+\subsubsection{Catalogue de Livres}
+\begin{itemize}
+    \item \textbf{Filtres Latéraux} : Catégorie, auteur, éditeur, prix min/max, disponibilité
+    \item \textbf{Barre de Recherche} : Recherche en temps réel avec autocomplétion
+    \item \textbf{Options de Tri} : Par titre, prix, date d'ajout, popularité
+    \item \textbf{Vue Grille/Liste} : Toggle pour changer le mode d'affichage
+    \item \textbf{Cartes Livres} : Image, titre, auteur, prix, stocks (V:X | E:Y), badges
+    \item \textbf{Pagination} : Navigation entre les pages de résultats
+\end{itemize}
+
+\subsubsection{Page Détail d'un Livre}
+\begin{itemize}
+    \item \textbf{Image Grande} : Couverture du livre en haute résolution
+    \item \textbf{Informations} : Titre, auteur (lien), ISBN, nombre de pages, date d'édition
+    \item \textbf{Prix et Stocks} : Prix affiché, stock vente, stock emprunt avec indicateurs visuels
+    \item \textbf{Actions} : Boutons Acheter, Emprunter, Ajouter à la wishlist
+    \item \textbf{Téléchargement PDF} : Si disponible, bouton pour télécharger l'extrait
+    \item \textbf{Onglets} : Description, Avis (avec notes), Livres similaires
+    \item \textbf{Section Avis} : Liste des avis avec étoiles, formulaire pour ajouter un avis
+\end{itemize}
+
+\subsubsection{Page Demande d'Emprunt}
+\begin{itemize}
+    \item \textbf{Résumé du Livre} : Miniature et informations essentielles
+    \item \textbf{Statut de Disponibilité} : Indicateur clair (disponible/indisponible)
+    \item \textbf{Calendrier} : FullCalendar montrant les emprunts en cours et dates de retour
+    \item \textbf{Formulaire} : Champ notes optionnel pour la demande
+    \item \textbf{Bouton Soumettre} : Envoi de la demande à l'administrateur
+    \item \textbf{Alternative Réservation} : Si indisponible, option de rejoindre la file d'attente
+\end{itemize}
+
+\subsubsection{Panier d'Achat}
+\begin{itemize}
+    \item \textbf{Liste des Articles} : Image, titre, prix unitaire, sélecteur quantité
+    \item \textbf{Sous-totaux} : Calcul automatique par ligne
+    \item \textbf{Validation Stock} : Alertes si quantité dépasse le stock disponible
+    \item \textbf{Total} : Montant total du panier
+    \item \textbf{Actions} : Supprimer article, vider panier, continuer shopping
+    \item \textbf{Bouton Checkout} : Procéder au paiement
+\end{itemize}
+
+\subsubsection{Page de Paiement (Checkout)}
+\begin{itemize}
+    \item \textbf{Récapitulatif Commande} : Liste des articles avec totaux
+    \item \textbf{Adresse de Livraison} : Formulaire ou sélection d'adresse enregistrée
+    \item \textbf{Adresse de Facturation} : Option "identique à livraison" ou formulaire séparé
+    \item \textbf{Méthode de Paiement} : Sélection (Stripe, virement, à la livraison)
+    \item \textbf{Formulaire Stripe} : Intégration Stripe Elements pour carte bancaire
+    \item \textbf{Bouton Confirmer} : Finalisation de la commande
+\end{itemize}
+
+\subsubsection{Tableau de Bord Administrateur}
+\begin{itemize}
+    \item \textbf{Cartes Statistiques} : Utilisateurs, livres, commandes, prêts actifs
+    \item \textbf{Graphique Évolution} : Courbe des emprunts/ventes sur le mois
+    \item \textbf{Prêts en Attente} : Liste des demandes à approuver avec actions rapides
+    \item \textbf{Commandes Récentes} : Dernières commandes avec statuts
+    \item \textbf{Alertes} : Livres en retard, stocks faibles
+    \item \textbf{Menu Latéral} : Accès rapide à toutes les sections admin
+\end{itemize}
+
+\subsubsection{Gestion des Prêts (Admin)}
+\begin{itemize}
+    \item \textbf{Tableau des Prêts} : Liste paginée avec filtres par statut
+    \item \textbf{Informations} : Utilisateur, livre, date demande, date échéance, statut
+    \item \textbf{Actions} : Approuver, refuser, marquer comme retourné
+    \item \textbf{Détail Prêt} : Modal avec historique complet et notes
+    \item \textbf{Export} : Possibilité d'exporter les données en CSV
+\end{itemize}
+
+\subsection{Workflow de Développement}
+
+\subsubsection{Méthodologie Adoptée}
+\begin{enumerate}
+    \item \textbf{Analyse des Besoins} : Identification des fonctionnalités requises
+    \item \textbf{Conception} : Modélisation des entités et diagrammes UML
+    \item \textbf{Développement Itératif} : Implémentation par modules fonctionnels
+    \item \textbf{Tests} : Validation de chaque fonctionnalité
+    \item \textbf{Intégration} : Assemblage des modules
+    \item \textbf{Déploiement} : Mise en production sur serveur
+\end{enumerate}
+
+\subsubsection{Outils de Développement}
+\begin{itemize}
+    \item \textbf{IDE} : Visual Studio Code avec extensions PHP/Symfony
+    \item \textbf{Versioning} : Git avec GitHub
+    \item \textbf{Base de Données} : MySQL Workbench pour la conception
+    \item \textbf{API Testing} : Postman pour tester les endpoints
+    \item \textbf{Debug} : Symfony Profiler et Debugger
+\end{itemize}
+
+\subsection{Guide d'Installation Détaillé}
+
+\subsubsection{Prérequis Système}
+\begin{itemize}
+    \item Système d'exploitation : Windows 10+, macOS 10.15+, ou Linux (Ubuntu 20.04+)
+    \item PHP 8.2 ou supérieur avec extensions : intl, pdo\_mysql, mbstring, xml, curl, gd
+    \item Composer 2.x
+    \item Node.js 18+ et npm
+    \item MySQL 8.0+ ou MariaDB 10.5+
+    \item Serveur web : Apache ou Nginx (ou Symfony CLI pour développement)
+\end{itemize}
+
+\subsubsection{Étapes d'Installation}
+\begin{enumerate}
+    \item Cloner le dépôt GitHub
+    \item Installer les dépendances PHP avec Composer
+    \item Installer les dépendances JavaScript avec npm
+    \item Configurer le fichier .env.local avec les paramètres de base de données
+    \item Créer la base de données
+    \item Exécuter les migrations Doctrine
+    \item Charger les fixtures de test (optionnel)
+    \item Créer les répertoires d'upload
+    \item Compiler les assets
+    \item Démarrer le serveur de développement
+\end{enumerate}
+
+\subsubsection{Configuration des Services Externes}
+\begin{itemize}
+    \item \textbf{Stripe} : Créer un compte Stripe, récupérer les clés API (test/production)
+    \item \textbf{Email} : Configurer un serveur SMTP (Gmail, Mailtrap pour tests, SendGrid)
+    \item \textbf{Uploads} : S'assurer que le répertoire public/uploads est accessible en écriture
+\end{itemize}
+
+\subsection{Statistiques du Projet}
+
+\begin{table}[H]
+\centering
+\caption{Métriques du Code Source}
+\begin{tabular}{|l|r|}
+\hline
+\textbf{Métrique} & \textbf{Valeur} \\
+\hline
+Nombre d'entités Doctrine & 18 \\
+\hline
+Nombre de contrôleurs & 35+ \\
+\hline
+Nombre de services & 7 \\
+\hline
+Nombre de migrations & 25 \\
+\hline
+Nombre de templates Twig & 100+ \\
+\hline
+Nombre de routes & 80+ \\
+\hline
+Lignes de code PHP estimées & 10,000+ \\
+\hline
+Lignes de templates Twig estimées & 5,000+ \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Répartition des Fonctionnalités}
+\begin{tabular}{|l|r|}
+\hline
+\textbf{Module} & \textbf{Pourcentage} \\
+\hline
+Gestion des livres et catalogue & 20\% \\
+\hline
+Système de prêt & 15\% \\
+\hline
+Système de réservation & 10\% \\
+\hline
+E-Commerce (panier, commandes) & 20\% \\
+\hline
+Gestion utilisateurs et profils & 10\% \\
+\hline
+Messagerie interne & 5\% \\
+\hline
+Administration (EasyAdmin + Custom) & 15\% \\
+\hline
+Autres (avis, progression, bannières) & 5\% \\
+\hline
+\end{tabular}
+\end{table}
+
+\vspace{1cm}
+
+\textbf{Références :}
+\begin{itemize}
+    \item \href{https://github.com/ahmedKhlif/biblio_Symfony}{Dépôt GitHub - https://github.com/ahmedKhlif/biblio\_Symfony}
+    \item Documentation Symfony 7 - \href{https://symfony.com/doc/current/index.html}{symfony.com/doc}
+    \item Documentation Doctrine ORM - \href{https://www.doctrine-project.org/}{doctrine-project.org}
+    \item Documentation EasyAdmin 4 - \href{https://symfony.com/bundles/EasyAdminBundle/current/index.html}{EasyAdminBundle}
+    \item Documentation Stripe Payments - \href{https://stripe.com/docs}{stripe.com/docs}
+    \item Documentation Bootstrap 4 - \href{https://getbootstrap.com/docs/4.6/}{getbootstrap.com}
+    \item Documentation FullCalendar.js - \href{https://fullcalendar.io/docs}{fullcalendar.io}
+    \item Documentation Turbo/Hotwire - \href{https://turbo.hotwired.dev/}{turbo.hotwired.dev}
+\end{itemize}
+
+\end{document}
