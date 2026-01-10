@@ -71,3 +71,12 @@ node_modules/
 *.exe
 miktex-setup.exe
 ###< Installation Files ###
+
+###> Documentation Files ###
+# Ignore all .md files except README.md
+*.md
+!README.md
+
+# Ignore docs directory
+/docs/
+###< Documentation Files ###
