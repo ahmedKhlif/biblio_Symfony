@@ -66,3 +66,8 @@ node_modules/
 /bin/.phpunit/
 /.phpunit.result.cache
 ###< Symfony Specific ###
+
+###> Installation Files ###
+*.exe
+miktex-setup.exe
+###< Installation Files ###

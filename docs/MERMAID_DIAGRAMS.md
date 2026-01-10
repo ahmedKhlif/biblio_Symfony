@@ -130,40 +130,40 @@ sequenceDiagram
 ## 3. E-Commerce Order Process Sequence
 
 ```mermaid
-sequenceDiagram
-    participant U as 👤 Utilisateur
-    participant C as 🛒 CartController
-    participant CH as 💳 CheckoutController
-    participant ST as 🔐 StripeService
-    participant DB as 💾 Base données
-    participant E as 📧 Email Service
-    
-    U->>C: Ajouter au panier
-    C->>DB: Vérifier stockVente > 0
-    DB-->>C: ✅ Stock vérifié
-    C->>DB: Créer CartItem
-    C-->>U: ✅ Article ajouté
-    
-    U->>C: Voir panier
-    C->>DB: Récupérer Cart
-    C-->>U: Afficher panier
-    
-    U->>CH: Procéder paiement
-    CH->>DB: Valider stocks
-    CH->>ST: Créer PaymentIntent
-    ST-->>CH: PaymentIntent ID
-    CH-->>U: Afficher Stripe
-    
-    U->>ST: Soumettre paiement
-    ST-->>CH: ✅ Paiement confirmé
-    
-    CH->>DB: Créer Order (paid)
-    CH->>DB: Créer OrderItems
-    CH->>DB: Décrémenter stockVente
-    CH->>DB: Vider panier
-    CH->>E: Envoyer confirmation
-    E-->>U: 📧 Email confirmation
-    CH-->>U: ✅ Commande confirmée
+  sequenceDiagram
+      participant U as 👤 Utilisateur
+      participant C as 🛒 CartController
+      participant CH as 💳 CheckoutController
+      participant ST as 🔐 StripeService
+      participant DB as 💾 Base données
+      participant E as 📧 Email Service
+      
+      U->>C: Ajouter au panier
+      C->>DB: Vérifier stockVente > 0
+      DB-->>C: ✅ Stock vérifié
+      C->>DB: Créer CartItem
+      C-->>U: ✅ Article ajouté
+      
+      U->>C: Voir panier
+      C->>DB: Récupérer Cart
+      C-->>U: Afficher panier
+      
+      U->>CH: Procéder paiement
+      CH->>DB: Valider stocks
+      CH->>ST: Créer PaymentIntent
+      ST-->>CH: PaymentIntent ID
+      CH-->>U: Afficher Stripe
+      
+      U->>ST: Soumettre paiement
+      ST-->>CH: ✅ Paiement confirmé
+      
+      CH->>DB: Créer Order (paid)
+      CH->>DB: Créer OrderItems
+      CH->>DB: Décrémenter stockVente
+      CH->>DB: Vider panier
+      CH->>E: Envoyer confirmation
+      E-->>U: 📧 Email confirmation
+      CH-->>U: ✅ Commande confirmée
 ```
 
 ---

@@ -355,7 +355,7 @@ class DashboardController extends AbstractDashboardController
         // Banner Management (ADMIN only)
         if ($hasAdminRole) {
             yield MenuItem::subMenu('Gestion du Site', 'fas fa-cog')->setSubItems([
-                MenuItem::linkToRoute('Bannières', 'fas fa-flag', 'app_admin_banner_index'),
+                MenuItem::linkToCrud('Bannières', 'fas fa-flag', \App\Entity\Banner::class),
             ]);
         }
     }

@@ -103,6 +103,83 @@
             color: var(--primary);
         }
 
+        /* Mobile Dropdown */
+        .mobile-dropdown {
+            display: none;
+            position: relative;
+        }
+
+        .mobile-dropdown-toggle {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--dark);
+            background: transparent;
+            border: 2px solid var(--primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .mobile-dropdown-toggle:hover {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .mobile-dropdown-toggle i {
+            font-size: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .mobile-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            min-width: 180px;
+            z-index: 1001;
+            overflow: hidden;
+            border: 1px solid rgba(0, 150, 136, 0.1);
+        }
+
+        .mobile-dropdown-menu.active {
+            display: block;
+        }
+
+        .mobile-dropdown-menu a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            color: var(--dark);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(0, 150, 136, 0.05);
+        }
+
+        .mobile-dropdown-menu a:last-child {
+            border-bottom: none;
+        }
+
+        .mobile-dropdown-menu a:hover {
+            background: rgba(0, 150, 136, 0.1);
+            color: var(--primary);
+        }
+
+        .mobile-dropdown-menu a i {
+            color: var(--primary);
+            width: 18px;
+            text-align: center;
+        }
+
         .navbar-actions {
             display: flex;
             gap: 15px;
@@ -650,6 +727,30 @@
                 display: none;
             }
 
+            .mobile-dropdown {
+                display: block;
+            }
+
+            .mobile-dropdown-toggle {
+                display: flex;
+            }
+
+            .navbar-actions {
+                gap: 10px;
+            }
+
+            .btn-nav {
+                padding: 6px 16px;
+                font-size: 13px;
+            }
+
+            @media (max-width: 480px) {
+                .mobile-dropdown-toggle {
+                    font-size: 13px;
+                    padding: 8px 16px;
+                }
+            }
+
             .features-grid {
                 grid-template-columns: 1fr;
             }
@@ -1159,8 +1260,22 @@
                 <li><a href="{{ path('app_about') }}">À propos</a></li>
                 <li><a href="{{ path('app_contact') }}">Contact</a></li>
             </ul>
+            <div class="mobile-dropdown">
+                <button class="mobile-dropdown-toggle" id="mobileDropdownToggle" type="button" aria-label="Menu de navigation mobile">
+                    Contact & À propos
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="mobile-dropdown-menu" id="mobileDropdownMenu">
+                    <a href="{{ path('app_about') }}">
+                        <i class="fas fa-info-circle"></i> À propos
+                    </a>
+                    <a href="{{ path('app_contact') }}">
+                        <i class="fas fa-envelope"></i> Contact
+                    </a>
+                </div>
+            </div>
             <div class="navbar-actions">
-                {% if app.user %}
+                {% if app.user is not null %}
                     <!-- User is logged in -->
                     <div class="user-dropdown" style="position: relative; display: inline-block;">
                         <a href="{{ path('app_profile') }}" class="btn-nav btn-user" style="display: inline-flex; align-items: center; gap: 8px;">
@@ -1170,6 +1285,9 @@
                         <div class="dropdown-menu" style="display: none; position: absolute; right: 0; top: 100%; background: white; border: 1px solid #ddd; border-radius: 4px; min-width: 200px; z-index: 1000;">
                             <a href="{{ path('app_profile') }}" style="display: block; padding: 10px 15px; color: #333; text-decoration: none; border-bottom: 1px solid #eee;">
                                 <i class="fas fa-user"></i> Mon Profil
+                            </a>
+                            <a href="{{ path('app_backoffice_dashboard') }}" style="display: block; padding: 10px 15px; color: #333; text-decoration: none; border-bottom: 1px solid #eee;">
+                                <i class="fas fa-tachometer-alt"></i> Tableau de bord
                             </a>
                             <a href="{{ path('app_logout') }}" style="display: block; padding: 10px 15px; color: #333; text-decoration: none;">
                                 <i class="fas fa-sign-out-alt"></i> Se déconnecter
@@ -1833,6 +1951,46 @@
 
         if (statsSection) {
             observer.observe(statsSection);
+        }
+
+        // Mobile dropdown toggle
+        const mobileDropdownToggle = document.getElementById('mobileDropdownToggle');
+        const mobileDropdownMenu = document.getElementById('mobileDropdownMenu');
+
+        if (mobileDropdownToggle && mobileDropdownMenu) {
+            mobileDropdownToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                mobileDropdownMenu.classList.toggle('active');
+                const icon = this.querySelector('i');
+                if (mobileDropdownMenu.classList.contains('active')) {
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                } else {
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                }
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!mobileDropdownToggle.contains(e.target) && !mobileDropdownMenu.contains(e.target)) {
+                    mobileDropdownMenu.classList.remove('active');
+                    const icon = mobileDropdownToggle.querySelector('i');
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                }
+            });
+
+            // Close dropdown when clicking on a link
+            const dropdownLinks = mobileDropdownMenu.querySelectorAll('a');
+            dropdownLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    mobileDropdownMenu.classList.remove('active');
+                    const icon = mobileDropdownToggle.querySelector('i');
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                });
+            });
         }
     </script>
 </body>

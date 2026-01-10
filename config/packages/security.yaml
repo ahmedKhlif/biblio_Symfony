@@ -14,7 +14,7 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         public:
-            pattern: ^/$|^/login$|^/register$|^/reset-password$|^/forgot-password$|^/verify$|^/about$|^/contact$
+            pattern: ^/login$|^/register$|^/reset-password$|^/forgot-password$|^/verify$|^/about$|^/contact$
             security: false
         main:
             lazy: true
@@ -44,8 +44,12 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        # Landing page is public (handled by public firewall)
-        - { path: ^/$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        # Public assets/profiler
+        - { path: ^/(_(profiler|wdt)|css|images|js)/, roles: PUBLIC_ACCESS }
+        # Landing page
+        - { path: ^/$, roles: PUBLIC_ACCESS }
+        # Public pages
+        - { path: ^/(login|register|reset-password|forgot-password|verify|about|contact)$, roles: PUBLIC_ACCESS }
         # Protected routes
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/backoffice, roles: [ROLE_USER, ROLE_MODERATOR, ROLE_ADMIN] }

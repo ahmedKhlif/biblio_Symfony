@@ -43,6 +43,17 @@
             <!-- Divider -->
             <hr class="sidebar-divider my-0">
 
+            <!-- Nav Item - Retour au site -->
+            <li class="nav-item">
+                <a class="nav-link" href="{{ path('app_landing') }}">
+                    <i class="fas fa-home"></i>
+                    <span>Retour au site</span>
+                </a>
+            </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider my-0">
+
             <!-- Nav Item - Dashboard -->
             <li class="nav-item active">
                 <a class="nav-link" href="{{ path('app_backoffice_dashboard') }}">
@@ -197,6 +208,13 @@
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
+
+            <!-- Sidebar Footer - Logout -->
+            <div class="text-center d-none d-md-inline mb-3">
+                <a class="btn btn-outline-light btn-sm" href="{{ path('app_logout') }}">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </a>
+            </div>
 
             <!-- Sidebar Toggler (Sidebar) -->
             <div class="text-center d-none d-md-inline">
@@ -1090,9 +1108,7 @@
                 margin-left: 0 !important;
             }
 
-            .navbar-nav {
-                flex-direction: row;
-            }
+        
 
             .navbar-nav .nav-item {
                 margin-left: 0.5rem;
